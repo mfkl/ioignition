@@ -5,11 +5,9 @@
 # ioignition
 Easy to use, privacy friendly analytics platform
 
-## Todo
+## TODO
 
-# Web and Real-Time Analytics Tool Project Plan
-
-## Batch 1: Basic Web Analytics
+### Stage 1: Basic Web Analytics
 - [ ] **Develop a Tracking Script**
   - Create a JavaScript script for basic tracking (page views, session times, unique visitor ID).
   - Ensure easy embeddability into web pages.
@@ -26,7 +24,7 @@ Easy to use, privacy friendly analytics platform
   - Deploy the application on a cloud server or locally.
   - Test the tracking to reporting flow.
 
-## Batch 2: Enhanced Data Collection and Reporting
+### Stage 2: Enhanced Data Collection and Reporting
 - [ ] **Enhance the Tracking Script**
   - Add data collection for referral source, browser/device info, and page time.
 
@@ -42,7 +40,7 @@ Easy to use, privacy friendly analytics platform
   - Test new features for accuracy and performance.
   - Optimize data processing and reporting.
 
-## Batch 3: Real-Time Analytics Introduction
+### Stage 3: Real-Time Analytics Introduction
 - [ ] **Real-Time Data Processing Setup**
   - Set up Apache Kafka for data streaming.
   - Use a framework (Apache Spark, Node.js) for real-time data processing.
@@ -55,7 +53,7 @@ Easy to use, privacy friendly analytics platform
   - Test real-time data processing and dashboard updates.
   - Ensure efficient handling of data streams.
 
-## Batch 4: Full-Fledged Real-Time Analytics
+### Stage 4: Full-Fledged Real-Time Analytics
 - [ ] **Advanced Real-Time Analytics**
   - Enhance real-time processing (user flow, session tracking, event triggers).
   - Implement real-time alerts for specific conditions.
@@ -68,7 +66,7 @@ Easy to use, privacy friendly analytics platform
   - Conduct extensive testing (load, stress).
   - Optimize for performance and reliability.
 
-## Final Steps
+### Final Steps
 - [ ] **Documentation**
   - Document features, setup, and usage of the tool.
 
