@@ -8,8 +8,8 @@ Easy to use, privacy friendly analytics platform
 ## TODO
 
 ### Stage 1: Basic Web Analytics
-- [ ] **Develop a Tracking Script**
-  - Create a JavaScript script for basic tracking (page views, session times, unique visitor ID).
+- [x] **Develop a Tracking Script**
+  - Create a JavaScript script for basic tracking (session times, unique visitor ID).
   - Ensure easy embeddability into web pages.
 
 - [ ] **Set Up a Backend to Receive Data**
