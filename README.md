@@ -1,9 +1,9 @@
 <div id="header" align="left">
-  <img src="https://github.com/Cijin/ioignition/assets/1990966/4376a83b-d1f7-4da0-85ee-fdef10e9bda0" width="100"/>
+  <img src="https://github.com/Cijin/ioignition/assets/1990966/0c01de29-b659-4640-81cb-97235dae6bec" width="100"/>
 </div> 
 
 # ioignition
-Easy to use, privacy friendly analytics platform
+Privacy first, open, and simple analytics app
 
 ## TODO
 
@@ -12,8 +12,8 @@ Easy to use, privacy friendly analytics platform
   - Create a JavaScript script for basic tracking (session times, unique visitor ID).
   - Ensure easy embeddability into web pages.
 
-- [ ] **Set Up a Backend to Receive Data**
-  - Develop a backend (Node.js, Python, etc.) to receive and store data.
+- [x] **Set Up a Backend to Receive Data**
+  - Develop the backend to receive and store data.
   - Choose and set up a database with a simple schema.
 
 - [ ] **Basic Reporting Interface**
