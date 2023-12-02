@@ -1,0 +1,38 @@
+package view
+
+templ Nav(user string) {
+	<nav class="bg-zinc-800">
+		<div class="max-w-6xl mx-auto px-4">
+			<div class="flex justify-between">
+				<div class="flex space-x-4">
+					<!-- Logo -->
+					<div>
+						<a href="/" class="flex items-center py-5 px-2 text-gray-200">
+							<img src="/assets/logo.svg" alt="io ignition logo" class="h-32 w-32 mr-2"/>
+						</a>
+					</div>
+					<!-- Primary Nav -->
+					<div class="hidden md:flex items-center space-x-1">
+						<a href="#" class="py-5 px-3 text-gray-200 hover:text-orange-500">About</a>
+						<a href="#" class="py-5 px-3 text-gray-200 hover:text-orange-500">Services</a>
+						<a href="#" class="py-5 px-3 text-gray-200 hover:text-orange-500">Contact</a>
+					</div>
+				</div>
+				<!-- Mobile Menu Button -->
+				<div class="md:hidden flex items-center">
+					<button class="mobile-menu-button">
+						<svg class="w-6 h-6 text-gray-200 hover:text-orange-500" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+							<path d="M4 6h16M4 12h16m-7 6h7"></path>
+						</svg>
+					</button>
+				</div>
+			</div>
+		</div>
+	</nav>
+	<script>
+    // JavaScript for mobile menu toggle
+    document.querySelector('.mobile-menu-button').addEventListener('click', function () {
+        // Toggle mobile menu visibility
+    });
+  </script>
+}

@@ -1,0 +1,26 @@
+package view
+
+templ Layout(contents templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<script src="js/htmx.min.js"></script>
+			<script src="js/json-enc.js"></script>
+			<link rel="preconnect" href="https://fonts.googleapis.com"/>
+			<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+			<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;700&display=swap" rel="stylesheet"/>
+			<title>Io Ignition</title>
+			<style>
+    body {
+      font-family: 'Urbanist', sans-serif;
+    }
+    </style>
+		</head>
+		<body class="bg-zinc-900 mx-auto min-h-screen text-white">
+			@contents
+		</body>
+	</html>
+}
