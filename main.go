@@ -13,6 +13,7 @@ import (
 	"path/filepath"
 	"time"
 
+	m "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httprate"
 	"github.com/joho/godotenv"
@@ -40,13 +41,22 @@ func init() {
 
 // set handlers, routers and serve routes
 func main() {
-	r := chi.NewRouter()
+	defer db.Close()
 
-	// Create a route along /files that will serve contents from
-	// the ./data/ folder.
+	jwtSecret := os.Getenv("JWT_SECRET")
+	dbQueries := database.New(db)
+	h := handlers.NewHandler(dbQueries, jwtSecret)
+
+	r := chi.NewRouter()
+	r.Use(m.Logger)
+	r.Use(middleware.Cors())
+	r.Use(httprate.LimitByIP(100, 1*time.Minute))
+
+	// Create a route along / that will serve contents from
+	// the public folder
 	workDir, _ := os.Getwd()
 	filesDir := http.Dir(filepath.Join(workDir, "public"))
-	fileServer(r, "/", filesDir)
+	utils.FileServer(r, "/", filesDir)
 
 	// Register Routes ----------------
 	registerRoutes(r, h)
