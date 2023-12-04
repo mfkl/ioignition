@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"ioignition/token"
-	"ioignition/utils"
 	"log"
 	"net/http"
 )
@@ -11,20 +10,21 @@ func (h *Handler) Authed(handler authedHandler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		t, err := token.GetSessionCookie(r, sessionCookieName)
 		if err != nil {
-			utils.RespondWithJson(w, http.StatusUnauthorized, err)
+			h.LandingPage(w, r)
 			return
 		}
 
 		userId, err := h.token.VerifyToken(t, token.Access)
 		if err != nil {
-			utils.RespondWithJson(w, http.StatusUnauthorized, err)
+			h.LandingPage(w, r)
 			return
 		}
 
+		// this is an internal error, should be handled better
 		user, err := h.db.GetUserById(r.Context(), userId)
 		if err != nil {
 			log.Printf("Error getting user by id: %+v", err)
-			utils.RespondWithInternalServerError(w)
+			h.LandingPage(w, r)
 			return
 		}
 

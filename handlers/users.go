@@ -7,7 +7,6 @@ import (
 	"ioignition/internal/database"
 	"ioignition/token"
 	"ioignition/utils"
-	"ioignition/view"
 	"log"
 	"net/http"
 	"net/mail"
@@ -92,7 +91,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	h.SetSesionCookie(w, r, accessToken)
 	w.Header().Set("HX-Replace-Url", "/")
 	// render home page
-	view.Layout(view.Nav(email.Address)).Render(r.Context(), w)
+	h.HomePage(w, r, u)
 }
 
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -151,5 +150,5 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("HX-Replace-Url", "/")
 
 	// render home page
-	view.Layout(view.Nav(email.Address)).Render(r.Context(), w)
+	h.HomePage(w, r, u)
 }

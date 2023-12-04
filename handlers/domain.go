@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"ioignition/internal/database"
 	"ioignition/utils"
+	"ioignition/view"
 	"log"
 	"net/http"
 	"net/url"
@@ -16,15 +17,15 @@ import (
 	"github.com/lib/pq"
 )
 
-type domainResponse struct {
+type DomainResponse struct {
 	ID        uuid.UUID `json:"id,omitempty"`
 	Url       string    `json:"url,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
-func mapDomainResponse(d *database.Domain) *domainResponse {
-	return &domainResponse{
+func mapDomainResponse(d *database.Domain) *DomainResponse {
+	return &DomainResponse{
 		ID:        d.ID,
 		Url:       d.Url,
 		CreatedAt: d.CreatedAt,
@@ -60,7 +61,7 @@ func (h *Handler) AddDomain(w http.ResponseWriter, r *http.Request, user databas
 
 	param := database.CreateDomainParams{
 		ID:        uuid.New(),
-		Url:       fmt.Sprintf("%s://%s", domain.Scheme, domain.Host),
+		Url:       fmt.Sprintf("%s", domain.Host),
 		UserID:    user.ID,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -80,4 +81,15 @@ func (h *Handler) AddDomain(w http.ResponseWriter, r *http.Request, user databas
 	}
 
 	utils.RespondWithJson(w, http.StatusOK, mapDomainResponse(&d))
+}
+
+func (h *Handler) ListDomains(w http.ResponseWriter, r *http.Request, user database.User) {
+	domains, err := h.db.ListDomains(r.Context(), user.ID)
+	if err != nil {
+		log.Print("Err getting domains: ", err)
+		utils.RespondWithInternalServerError(w)
+		return
+	}
+
+	view.ListDomains(domains).Render(r.Context(), w)
 }

@@ -5,3 +5,8 @@ INSERT INTO domains (
   $1, $2, $3, $4, $5
 )
 RETURNING *;
+
+-- name: ListDomains :many
+SELECT * FROM domains 
+WHERE user_id = $1
+LIMIT 10;

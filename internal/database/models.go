@@ -19,18 +19,25 @@ type Domain struct {
 	UserID    uuid.UUID
 }
 
-type Stat struct {
+type DomainSession struct {
 	ID               uuid.UUID
 	VisitorID        string
 	SessionStartTime time.Time
 	SessionEndTime   sql.NullTime
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
-	Url              string
-	Referer          sql.NullString
-	DeviceWidth      sql.NullInt32
-	UserAgent        sql.NullString
 	DomainID         uuid.UUID
+}
+
+type DomainStat struct {
+	ID              uuid.UUID
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	Url             string
+	Referer         sql.NullString
+	DeviceWidth     sql.NullInt32
+	UserAgent       sql.NullString
+	DomainSessionID uuid.UUID
 }
 
 type User struct {

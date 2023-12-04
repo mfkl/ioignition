@@ -8,17 +8,17 @@ templ Login() {
 				<form class="p-2" hx-post="/login" hx-target="body" hx-ext="json-enc">
 					<div class="mb-4">
 						<label for="email" class="block text-sm font-medium mb-2">Email:</label>
-						<input type="email" id="email" name="email" class="bg-zinc-900 text-white rounded border border-zinc-700 focus:border-orange-700 focus:ring focus:ring-orange-700 focus:ring-opacity-50 block w-full p-2.5"/>
+						<input type="email" id="email" name="email" class="bg-zinc-900 text-white rounded border border-zinc-500 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50 block w-full p-2.5"/>
 					</div>
 					<div class="mb-6">
 						<label for="password" class="block text-sm font-medium mb-2">Password:</label>
-						<input type="password" id="password" name="password" class="bg-zinc-900 text-white rounded border border-zinc-700 focus:border-orange-700 focus:ring focus:ring-orange-700 focus:ring-opacity-50 block w-full p-2.5"/>
+						<input type="password" id="password" name="password" class="bg-zinc-900 text-white rounded border border-zinc-500 focus:border-red-500 focus:ring focus:ring-red-500 focus:ring-opacity-50 block w-full p-2.5"/>
 					</div>
-					<button type="submit" class="w-full bg-orange-700 hover:bg-orange-800 text-white font-medium py-2 px-4 rounded">Login</button>
+					<button type="submit" class="w-full bg-red-500 hover:bg-red-800 text-white font-medium py-2 px-4 rounded">Login</button>
 				</form>
 				<div class="text-center mt-4">
 					<p class="text-sm">
-						Don't have an account? <a href="/sign-up" class="text-orange-600 hover:text-orange-700">Sign Up</a>
+						Don't have an account? <a href="/sign-up" class="text-red-600 hover:text-red-500">Sign Up</a>
 					</p>
 				</div>
 			</section>

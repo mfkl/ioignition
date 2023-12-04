@@ -1,0 +1,20 @@
+package view
+
+templ Home(email string) {
+	@Nav(email)
+	<main class="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-20">
+		@Domains()
+	</main>
+}
+
+templ Domains() {
+	<div class="space-y-6 py-6">
+		<!-- Header -->
+		<header class="text-left">
+			<h1 class="text-3xl font-bold decoration-red-500">Your Sites</h1>
+		</header>
+		<hr class="border-red-500"/>
+		<!-- Grid of Domains -->
+		<section hx-trigger="load" hx-get="/domains" class="px-4 py-5"></section>
+	</div>
+}
