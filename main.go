@@ -45,7 +45,7 @@ func main() {
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 	dbQueries := database.New(db)
-	h := handlers.NewHandler(dbQueries, jwtSecret)
+	h := handlers.NewHandler(db, dbQueries, jwtSecret)
 
 	r := chi.NewRouter()
 	r.Use(m.Logger)

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"ioignition/internal/database"
 	"ioignition/token"
 	"net/http"
@@ -12,12 +13,28 @@ const UniqueViolationCode = "23505"
 type authedHandler func(w http.ResponseWriter, r *http.Request, user database.User)
 
 type Handler struct {
-	db    *database.Queries
-	token *token.Token
+	db        *sql.DB
+	dbQueries *database.Queries
+	token     *token.Token
 }
 
-func NewHandler(db *database.Queries, jwtSecret string) *Handler {
+func NewHandler(db *sql.DB, dbQueries *database.Queries, jwtSecret string) *Handler {
 	t := token.NewToken(jwtSecret)
 
-	return &Handler{db, t}
+	return &Handler{db, dbQueries, t}
+}
+
+// useful utils
+func (h *Handler) NewNullString(s string) sql.NullString {
+	if len(s) == 0 {
+		return sql.NullString{}
+	}
+
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
+}
+
+func (h *Handler) NewNullInt(i int) sql.NullInt32 {
 }

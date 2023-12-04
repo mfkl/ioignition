@@ -7,7 +7,7 @@ function generateEventId() {
   const id = 'io-' + new Date().getTime() + '-' + Math.random().toString(36).substring(2, 9);
   try {
     localStorage.setItem(localstoreId, id)
-  } catch(err) {}
+  } catch (err) { }
 
   return id
 }
@@ -16,8 +16,8 @@ function getEventId() {
   let uId = ''
   try {
     uId = localStorage.getItem(localstoreId)
-  } catch (error) {}
-  
+  } catch (error) { }
+
   if (uId) return uId
 
   return generateEventId()
@@ -34,21 +34,21 @@ function sendEvent(eventName, data) {
   }
 
   const eventId = getEventId()
-  const sessionTime = Date.now() - startTime
-  
+  // const sessionEndTime = new Date().toUTCString()
+
   const payload = {
-    n: eventName,
-    u: data.url,
-    d: data.domain,
-    r: data.referrer,
-    w: data.deviceWidth,
-    a: data.userAgent,
-    t: sessionTime
+    event: eventName,
+    url: data.url,
+    domain: data.domain,
+    referrer: data.referrer,
+    width: data.deviceWidth,
+    agent: data.userAgent,
+    sessionsstart: startTime
   };
 
   const req = new XMLHttpRequest();
   req.open('POST', `${data.apiHost}/api/event/${eventId}`, true);
-  req.setRequestHeader('Content-Type', 'text/plain');
+  req.setRequestHeader('Content-Type', 'text/json');
   req.send(JSON.stringify(payload));
 
   req.onreadystatechange = () => {
@@ -61,24 +61,24 @@ function sendEvent(eventName, data) {
 function config() {
   return {
     url: location.href,
-    domain: location.hostname,
-    referrer: document.referrer || null,
+    domain: document.currentScript.getAttribute('data-domain'),
+    referrer: document.referrer || "",
     deviceWidth: window.innerWidth,
     userAgent: window.navigator.userAgent,
     apiHost: 'https://ioignition.com/api',
   }
 }
 
-function trackEvent (eventName, eventData) {
+function trackEvent(eventName, eventData) {
   sendEvent(eventName, { ...config(), ...eventData });
 };
 
-function trackPageview (eventData) {
+function trackPageview(eventData) {
   trackEvent('pageview', eventData);
 };
 
 function startTimeListener() {
-  startTime = Date.now()
+  startTime = new Date().toUTCString()
 }
 
 function enableTracking() {

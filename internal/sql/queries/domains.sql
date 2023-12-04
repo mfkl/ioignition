@@ -6,6 +6,11 @@ INSERT INTO domains (
 )
 RETURNING *;
 
+-- name: GetDomain :one
+SELECT * FROM domains 
+WHERE url = $1
+LIMIT 1;
+
 -- name: ListDomains :many
 SELECT * FROM domains 
 WHERE user_id = $1

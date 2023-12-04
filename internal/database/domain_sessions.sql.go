@@ -15,16 +15,16 @@ import (
 
 const createDomainSession = `-- name: CreateDomainSession :one
 INSERT INTO domain_sessions (
-  id, visitor_id, session_start_time, session_end_time, domain_id, created_at, updated_at
+  id, event_id, session_start_time, session_end_time, domain_id, created_at, updated_at
 ) VALUES (
   $1, $2, $3, $4, $5, $6, $7
 )
-RETURNING id, visitor_id, session_start_time, session_end_time, created_at, updated_at, domain_id
+RETURNING id, event_id, session_start_time, session_end_time, created_at, updated_at, domain_id
 `
 
 type CreateDomainSessionParams struct {
 	ID               uuid.UUID
-	VisitorID        string
+	EventID          string
 	SessionStartTime time.Time
 	SessionEndTime   sql.NullTime
 	DomainID         uuid.UUID
@@ -35,7 +35,7 @@ type CreateDomainSessionParams struct {
 func (q *Queries) CreateDomainSession(ctx context.Context, arg CreateDomainSessionParams) (DomainSession, error) {
 	row := q.db.QueryRowContext(ctx, createDomainSession,
 		arg.ID,
-		arg.VisitorID,
+		arg.EventID,
 		arg.SessionStartTime,
 		arg.SessionEndTime,
 		arg.DomainID,
@@ -45,7 +45,7 @@ func (q *Queries) CreateDomainSession(ctx context.Context, arg CreateDomainSessi
 	var i DomainSession
 	err := row.Scan(
 		&i.ID,
-		&i.VisitorID,
+		&i.EventID,
 		&i.SessionStartTime,
 		&i.SessionEndTime,
 		&i.CreatedAt,
