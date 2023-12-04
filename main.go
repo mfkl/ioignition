@@ -1,18 +1,44 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"ioignition/handlers"
+	"ioignition/internal/database"
+	"ioignition/middleware"
+	"ioignition/utils"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/httprate"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 const Port = "8080"
 
+var db *sql.DB
+
+// initialize env and open database
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading env: ", err)
+	}
+
+	// Db Setup -------------------------
+	dbUrl := os.Getenv("DB_URL")
+	db, err = sql.Open("postgres", dbUrl)
+	if err != nil {
+		log.Fatal("Failed to open db: ", err)
+	}
+}
+
+// set handlers, routers and serve routes
 func main() {
 	r := chi.NewRouter()
 
@@ -22,6 +48,10 @@ func main() {
 	filesDir := http.Dir(filepath.Join(workDir, "public"))
 	fileServer(r, "/", filesDir)
 
+	// Register Routes ----------------
+	registerRoutes(r, h)
+
+	// Server -------------------------
 	server := http.Server{
 		Addr:    ":" + Port,
 		Handler: r,
@@ -29,28 +59,4 @@ func main() {
 
 	fmt.Printf("Server listing on port: %s\n", Port)
 	log.Fatal(server.ListenAndServe())
-}
-
-func fileServer(r chi.Router, path string, root http.FileSystem) {
-	if strings.ContainsAny(path, "{}*") {
-		panic("fileserver does not permit any parameters")
-	}
-
-	// add trailing '/' if not existing
-	if path != "/" && path[len(path)-1] != '/' {
-		// letting the caller know that resource has moved from path to path/
-		r.Get(path, http.RedirectHandler(path+"/", http.StatusMovedPermanently).ServeHTTP)
-		path += "/"
-	}
-	path += "*"
-
-	r.Get(path, func(w http.ResponseWriter, r *http.Request) {
-		rctx := chi.RouteContext(r.Context())
-		// ex: public/*
-		pathPrefix := strings.TrimSuffix(rctx.RoutePattern(), "/*")
-		// removes public from /public/*
-		fs := http.StripPrefix(pathPrefix, http.FileServer(root))
-
-		fs.ServeHTTP(w, r)
-	})
 }

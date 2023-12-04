@@ -1,0 +1,26 @@
+{
+  "name": "ioignition",
+  "version": "0.0.1",
+  "description": "Script for io ignition",
+  "main": "js/index.js",
+  "scripts": {
+    "watch-css": "npx tailwindcss -i ./view/input.css -o ./public/css/output.css --watch",
+    "watch-server": "air",
+    "watch-templ": "templ generate --watch",
+    "watch": "npm-run-all --parallel watch-css watch-server watch-templ",
+    "build-script": "babel js --out-dir dist/ && terser dist/index.js --compress --mangle --output public/js/script.js",
+    "build-server": "go build -o server",
+    "build-templ": "templ generate",
+    "build-style": "npx tailwindcss -o ./public/css/output.css --minify"
+  },
+  "keywords": [],
+  "author": "",
+  "devDependencies": {
+    "@babel/cli": "^7.23.4",
+    "@babel/core": "^7.23.3",
+    "@babel/preset-env": "^7.23.3",
+    "npm-run-all": "^4.1.5",
+    "tailwindcss": "^3.3.5",
+    "terser": "^5.24.0"
+  }
+}
