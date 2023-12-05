@@ -19,10 +19,13 @@ import (
 // webhook
 func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
-		EventId  string `json:"eventid,omitempty"`
-		Event    string `json:"event,omitempty"`
+		EventId string `json:"eventid,omitempty"`
+		Event   string `json:"event,omitempty"`
+		// Note: domain is the registered domain against which you would check if
+		// it's registered to be using ioignition analytics
+		Domain string `json:"domain,omitempty"`
+		// URL is the url the analytics data was sent from
 		Url      string `json:"url,omitempty"`
-		Domain   string `json:"domain,omitempty"`
 		Referrer string `json:"referrer,omitempty"`
 		Width    int    `json:"width,omitempty"`
 		Browser  string `json:"browser,omitempty"`
