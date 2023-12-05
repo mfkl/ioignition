@@ -3,7 +3,7 @@
 const localstoreId = 'ioEventId'
 let startTime
 
-function generateEventId() {
+function generateId() {
   const id = 'io-' + new Date().getTime() + '-' + Math.random().toString(36).substring(2, 9);
   try {
     localStorage.setItem(localstoreId, id)
@@ -12,7 +12,7 @@ function generateEventId() {
   return id
 }
 
-function getEventId() {
+function getClientId() {
   let uId = ''
   try {
     uId = localStorage.getItem(localstoreId)
@@ -20,7 +20,7 @@ function getEventId() {
 
   if (uId) return uId
 
-  return generateEventId()
+  return generateId()
 }
 
 function sendEvent(eventName, data) {
@@ -33,21 +33,22 @@ function sendEvent(eventName, data) {
     // return ---> uncomment
   }
 
-  const eventId = getEventId()
-  // const sessionEndTime = new Date().toUTCString()
+  const clientId = getClientId()
+  // unique per instance
+  const eventId = generateId()
 
   const payload = {
+    eventid: eventId,
     event: eventName,
     url: data.url,
     domain: data.domain,
     referrer: data.referrer,
     width: data.deviceWidth,
     agent: data.userAgent,
-    sessionsstart: startTime
   };
 
   const req = new XMLHttpRequest();
-  req.open('POST', `${data.apiHost}/api/event/${eventId}`, true);
+  req.open('POST', `${data.apiHost}/event/${clientId}`, true);
   req.setRequestHeader('Content-Type', 'text/json');
   req.send(JSON.stringify(payload));
 

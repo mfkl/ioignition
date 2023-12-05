@@ -1,6 +1,7 @@
 -- +goose Up
 CREATE TABLE IF NOT EXISTS domain_sessions (
   id UUID PRIMARY KEY,
+  client_id TEXT UNIQUE NOT NULL,
   event_id TEXT UNIQUE NOT NULL,
   session_start_time TIMESTAMP NOT NULL,
   session_end_time TIMESTAMP, -- can be null if user still active

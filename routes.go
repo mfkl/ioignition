@@ -25,3 +25,8 @@ func registerRoutes(r chi.Router, h *handlers.Handler) {
 	// Domain Stats Routes
 	r.Get("/{domain}", h.Authed(h.DomainStatsPage))
 }
+
+func registerApiRoutes(r chi.Router, h *handlers.Handler) {
+	r.Post("/event/{clientId}", h.StatEvent)
+	r.Put("/event/{clientId}", h.StatUpdateEvent)
+}

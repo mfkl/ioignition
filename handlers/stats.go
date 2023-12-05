@@ -14,26 +14,25 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 // webhook
 func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
-		Event         string `json:"event,omitempty"`
-		Url           string `json:"url,omitempty"`
-		Domain        string `json:"domain,omitempty"`
-		Referrer      string `json:"referrer,omitempty"`
-		Width         int    `json:"width,omitempty"`
-		Agent         string `json:"agent,omitempty"`
-		Sessionsstart string `json:"sessionsstart,omitempty"`
+		EventId  string `json:"eventid,omitempty"`
+		Event    string `json:"event,omitempty"`
+		Url      string `json:"url,omitempty"`
+		Domain   string `json:"domain,omitempty"`
+		Referrer string `json:"referrer,omitempty"`
+		Width    int    `json:"width,omitempty"`
+		Agent    string `json:"agent,omitempty"`
 	}
 
-	eventId := chi.URLParam(r, "eventId")
+	clientId := chi.URLParam(r, "clientId")
 
-	if eventId == "" {
-		log.Print("Event id missing")
-		utils.RespondWithError(w, http.StatusBadRequest, errors.New("event id cannot be empty"))
+	if clientId == "" {
+		log.Print("Client id missing")
+		utils.RespondWithError(w, http.StatusBadRequest, errors.New("client id cannot be empty"))
 		return
 	}
 
@@ -43,13 +42,6 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 	err := decoder.Decode(body)
 	if err != nil {
 		log.Printf("Error decoding json: %+v", err)
-		utils.RespondWithInternalServerError(w)
-		return
-	}
-
-	startTime, err := time.Parse(time.RFC1123, body.Sessionsstart)
-	if err != nil {
-		log.Printf("Error parsing session start time: %+v", err)
 		utils.RespondWithInternalServerError(w)
 		return
 	}
@@ -85,24 +77,15 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 	// start of a session
 	sessionParam := database.CreateDomainSessionParams{
 		ID:               uuid.New(),
-		EventID:          eventId,
+		ClientID:         clientId,
+		EventID:          body.EventId,
 		DomainID:         domain.ID,
-		SessionStartTime: startTime,
+		SessionStartTime: time.Now(),
 		UpdatedAt:        time.Now(),
 		CreatedAt:        time.Now(),
 	}
 
-	tx, err := h.db.Begin()
-	if err != nil {
-		log.Print("Error starting transaction: err")
-		utils.RespondWithInternalServerError(w)
-		return
-	}
-
-	defer tx.Rollback()
-
-	qtx := h.dbQueries.WithTx(tx)
-	session, err := qtx.CreateDomainSession(r.Context(), sessionParam)
+	session, err := h.dbQueries.CreateDomainSession(r.Context(), sessionParam)
 	if err != nil {
 		log.Printf("Error creating session: %+v", err)
 		utils.RespondWithInternalServerError(w)
@@ -120,17 +103,65 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 		CreatedAt:       time.Now(),
 	}
 
-	_, err = qtx.CreateDomainStat(r.Context(), statParam)
+	_, err = h.dbQueries.CreateDomainStat(r.Context(), statParam)
 	if err != nil {
 		log.Printf("Error creating stat entry: %+v", err)
 		utils.RespondWithInternalServerError(w)
 		return
 	}
+}
 
-	err = tx.Commit()
+// webhook
+func (h *Handler) StatUpdateEvent(w http.ResponseWriter, r *http.Request) {
+	type reqBody struct {
+		EventId string `json:"eventid,omitempty"`
+		Event   string `json:"event,omitempty"`
+	}
+
+	clientId := chi.URLParam(r, "eventId")
+
+	if clientId == "" {
+		log.Print("Client id missing")
+		utils.RespondWithError(w, http.StatusBadRequest, errors.New("client id cannot be empty"))
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	body := &reqBody{}
+
+	err := decoder.Decode(body)
 	if err != nil {
-		log.Printf("Error commiting transaction: %+v", err)
+		log.Printf("Error decoding json: %+v", err)
 		utils.RespondWithInternalServerError(w)
 		return
 	}
+
+	getSessionParam := database.GetDomainSessionParams{
+		EventID:  body.EventId,
+		ClientID: clientId,
+	}
+
+	session, err := h.dbQueries.GetDomainSession(r.Context(), getSessionParam)
+	if err != nil {
+		log.Printf("Error getting session: %+v", err)
+		utils.RespondWithInternalServerError(w)
+		return
+	}
+
+	// there is no session end time as the StatEvent api only registers the
+	// start of a session
+	updateSessionParam := database.UpdateDomainSessionParams{
+		ID:             session.ID,
+		SessionEndTime: sql.NullTime{Time: time.Now(), Valid: true},
+		UpdatedAt:      time.Now(),
+	}
+
+	err = h.dbQueries.UpdateDomainSession(r.Context(), updateSessionParam)
+	if err != nil {
+		log.Printf("Error creating session: %+v", err)
+		utils.RespondWithInternalServerError(w)
+		return
+	}
+
+	utils.RespondWithJson(w, http.StatusOK, nil)
 }

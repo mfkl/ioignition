@@ -21,6 +21,7 @@ type Domain struct {
 
 type DomainSession struct {
 	ID               uuid.UUID
+	ClientID         string
 	EventID          string
 	SessionStartTime time.Time
 	SessionEndTime   sql.NullTime
