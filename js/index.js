@@ -55,7 +55,9 @@ function sendEvent(eventName, data) {
   req.onreadystatechange = () => {
     if (req.readyState === 4) return;
     // send some diagnostics??
-    cleanup()
+    if (eventName === 'sessionend') {
+      cleanup()
+    }
   };
 }
 
@@ -66,30 +68,29 @@ function config() {
     referrer: document.referrer || "",
     deviceWidth: window.innerWidth,
     userAgent: window.navigator.userAgent,
-    apiHost: 'https://ioignition.com/api',
+    apiHost: 'http://localhost:8080/api',
   }
 }
 
-function trackEvent(eventName, eventData) {
-  sendEvent(eventName, { ...config(), ...eventData });
+function trackEvent(eventName) {
+  sendEvent(eventName, config());
 };
 
-function trackPageview(eventData) {
-  trackEvent('pageview', eventData);
+function trackPageview() {
+  trackEvent('pageview');
 };
 
-function startTimeListener() {
-  startTime = new Date().toUTCString()
+function endPageView() {
+  trackEvent('sessionend')
 }
 
 function enableTracking() {
-  window.addEventListener('DOMContentLoaded', startTimeListener)
-  window.addEventListener('beforeunload', trackPageview)
+  window.addEventListener('beforeunload', endPageView)
 }
 
 function cleanup() {
-  window.removeEventListener('DOMContentLoaded', startTimeListener)
-  window.removeEventListener('beforeunload', trackPageview)
+  window.removeEventListener('beforeunload', endPageView)
 }
 
+trackPageview()
 enableTracking()

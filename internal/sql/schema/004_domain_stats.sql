@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS domain_stats (
   id UUID PRIMARY KEY,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  url TEXT UNIQUE NOT NULL,
+  url TEXT NOT NULL,
   referer TEXT,
   device_width INTEGER,
   user_agent TEXT,

@@ -35,6 +35,3 @@ func (h *Handler) NewNullString(s string) sql.NullString {
 		Valid:  true,
 	}
 }
-
-func (h *Handler) NewNullInt(i int) sql.NullInt32 {
-}
