@@ -1,7 +1,6 @@
 "use strict";
 
 const localstoreId = 'ioEventId'
-let startTime
 
 function generateId() {
   const id = 'io-' + new Date().getTime() + '-' + Math.random().toString(36).substring(2, 9);
@@ -23,6 +22,48 @@ function getClientId() {
   return generateId()
 }
 
+function getBrowserAndPlatform() {
+  const userAgent = navigator.userAgent;
+  const platformInfo = navigator.platform;
+  let browser, platform;
+
+  // Detecting browser name
+  if (userAgent.includes("Firefox")) {
+    browser = "Mozilla Firefox";
+  } else if (userAgent.includes("SamsungBrowser")) {
+    browser = "Samsung Internet";
+  } else if (userAgent.includes("Opera") || userAgent.includes("OPR")) {
+    browser = "Opera";
+  } else if (userAgent.includes("Trident")) {
+    browser = "Internet Explorer";
+  } else if (userAgent.includes("Edge")) {
+    browser = "Edge";
+  } else if (userAgent.includes("Chrome")) {
+    browser = "Chrome";
+  } else if (userAgent.includes("Safari")) {
+    browser = "Safari";
+  } else {
+    browser = "unknown";
+  }
+
+  // Detecting platform (operating system)
+  if (platformInfo.startsWith("Win")) {
+    platform = "Windows";
+  } else if (platformInfo.startsWith("Mac")) {
+    platform = "MacOS";
+  } else if (platformInfo.startsWith("Linux")) {
+    platform = "Linux";
+  } else if (platformInfo.startsWith("iPhone") || platformInfo.startsWith("iPad")) {
+    platform = "iOS";
+  } else if (platformInfo.startsWith("Android")) {
+    platform = "Android";
+  } else {
+    platform = "unknown";
+  }
+
+  return { browser, platform };
+}
+
 function sendEvent(eventName, data) {
   const isLocalhost =
     /^localhost$|^127(?:\.[0-9]+){0,2}\.[0-9]+$|^(?:0*:)*?:?0*1$/.test(
@@ -40,11 +81,7 @@ function sendEvent(eventName, data) {
   const payload = {
     eventid: eventId,
     event: eventName,
-    url: data.url,
-    domain: data.domain,
-    referrer: data.referrer,
-    width: data.deviceWidth,
-    agent: data.userAgent,
+    ...data
   };
 
   const req = new XMLHttpRequest();
@@ -62,12 +99,15 @@ function sendEvent(eventName, data) {
 }
 
 function config() {
+  const { browser, platform } = getBrowserAndPlatform()
+
   return {
     url: location.href,
     domain: document.currentScript.getAttribute('data-domain'),
     referrer: document.referrer || "",
     deviceWidth: window.innerWidth,
-    userAgent: window.navigator.userAgent,
+    browser,
+    platform,
     apiHost: 'http://localhost:8080/api',
   }
 }

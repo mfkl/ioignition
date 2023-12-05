@@ -25,7 +25,8 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 		Domain   string `json:"domain,omitempty"`
 		Referrer string `json:"referrer,omitempty"`
 		Width    int    `json:"width,omitempty"`
-		Agent    string `json:"agent,omitempty"`
+		Browser  string `json:"browser,omitempty"`
+		Platform string `json:"platform,omitempty"`
 	}
 
 	clientId := chi.URLParam(r, "clientId")
@@ -94,11 +95,12 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 
 	statParam := database.CreateDomainStatParams{
 		ID:              uuid.New(),
-		Url:             u.String(),
+		Url:             body.Url,
 		Referer:         h.NewNullString(body.Referrer),
 		DeviceWidth:     sql.NullInt32{Int32: int32(body.Width), Valid: true},
 		DomainSessionID: session.ID,
-		UserAgent:       h.NewNullString(body.Agent),
+		Browser:         h.NewNullString(body.Browser),
+		Platform:        h.NewNullString(body.Platform),
 		UpdatedAt:       time.Now(),
 		CreatedAt:       time.Now(),
 	}

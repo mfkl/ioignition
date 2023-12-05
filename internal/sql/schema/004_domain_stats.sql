@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS domain_stats (
   url TEXT NOT NULL,
   referer TEXT,
   device_width INTEGER,
-  user_agent TEXT,
+  browser TEXT,
+  platform TEXT,
   domain_session_id UUID NOT NULL,
   FOREIGN KEY (domain_session_id) REFERENCES domain_sessions(id) ON DELETE CASCADE
 );

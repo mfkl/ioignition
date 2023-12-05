@@ -15,11 +15,11 @@ import (
 
 const createDomainStat = `-- name: CreateDomainStat :one
 INSERT INTO domain_stats (
-  id, url, referer, device_width, user_agent, domain_session_id, created_at, updated_at
+  id, url, referer, device_width, browser, platform, domain_session_id, created_at, updated_at
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8
+  $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
-RETURNING id, created_at, updated_at, url, referer, device_width, user_agent, domain_session_id
+RETURNING id, created_at, updated_at, url, referer, device_width, browser, platform, domain_session_id
 `
 
 type CreateDomainStatParams struct {
@@ -27,7 +27,8 @@ type CreateDomainStatParams struct {
 	Url             string
 	Referer         sql.NullString
 	DeviceWidth     sql.NullInt32
-	UserAgent       sql.NullString
+	Browser         sql.NullString
+	Platform        sql.NullString
 	DomainSessionID uuid.UUID
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
@@ -39,7 +40,8 @@ func (q *Queries) CreateDomainStat(ctx context.Context, arg CreateDomainStatPara
 		arg.Url,
 		arg.Referer,
 		arg.DeviceWidth,
-		arg.UserAgent,
+		arg.Browser,
+		arg.Platform,
 		arg.DomainSessionID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
@@ -52,7 +54,8 @@ func (q *Queries) CreateDomainStat(ctx context.Context, arg CreateDomainStatPara
 		&i.Url,
 		&i.Referer,
 		&i.DeviceWidth,
-		&i.UserAgent,
+		&i.Browser,
+		&i.Platform,
 		&i.DomainSessionID,
 	)
 	return i, err

@@ -37,7 +37,8 @@ type DomainStat struct {
 	Url             string
 	Referer         sql.NullString
 	DeviceWidth     sql.NullInt32
-	UserAgent       sql.NullString
+	Browser         sql.NullString
+	Platform        sql.NullString
 	DomainSessionID uuid.UUID
 }
 
