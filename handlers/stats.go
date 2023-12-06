@@ -16,6 +16,20 @@ import (
 	"github.com/google/uuid"
 )
 
+// helper
+func (h *Handler) PersistUrl(r *http.Request, url string, event string, sessionId uuid.UUID) (database.Url, error) {
+	urlParam := database.CreateSessionUrlParams{
+		ID:              uuid.New(),
+		Url:             url,
+		EventName:       event,
+		DomainSessionID: sessionId,
+		UpdatedAt:       time.Now(),
+		CreatedAt:       time.Now(),
+	}
+
+	return h.dbQueries.CreateSessionUrl(r.Context(), urlParam)
+}
+
 // webhook
 func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
@@ -100,15 +114,7 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	urlParam := database.CreateSessionUrlParams{
-		ID:              uuid.New(),
-		Url:             body.Url,
-		DomainSessionID: session.ID,
-		UpdatedAt:       time.Now(),
-		CreatedAt:       time.Now(),
-	}
-
-	_, err = h.dbQueries.CreateSessionUrl(r.Context(), urlParam)
+	_, err = h.PersistUrl(r, body.Url, body.Event, session.ID)
 	if err != nil {
 		log.Printf("Error creating stat entry: %+v", err)
 		utils.RespondWithInternalServerError(w)
@@ -119,7 +125,55 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 }
 
 // webhook
-func (h *Handler) StatUpdateEvent(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) StatUrlUpdate(w http.ResponseWriter, r *http.Request) {
+	type reqBody struct {
+		SessionId string `json:"sessionId,omitempty"`
+		Event     string `json:"event,omitempty"`
+		Url       string `json:"url,omitempty"`
+	}
+
+	clientId := chi.URLParam(r, "clientId")
+
+	if clientId == "" {
+		log.Print("Client id missing")
+		utils.RespondWithError(w, http.StatusBadRequest, errors.New("client id cannot be empty"))
+		return
+	}
+
+	decoder := json.NewDecoder(r.Body)
+	body := &reqBody{}
+
+	err := decoder.Decode(body)
+	if err != nil {
+		log.Printf("Error decoding json: %+v", err)
+		utils.RespondWithInternalServerError(w)
+		return
+	}
+
+	getSessionParam := database.GetDomainSessionParams{
+		SessionID: body.SessionId,
+		ClientID:  clientId,
+	}
+
+	session, err := h.dbQueries.GetDomainSession(r.Context(), getSessionParam)
+	if err != nil {
+		log.Printf("Error getting session: %+v", err)
+		utils.RespondWithInternalServerError(w)
+		return
+	}
+
+	_, err = h.PersistUrl(r, body.Url, body.Event, session.ID)
+	if err != nil {
+		log.Printf("Error creating stat entry: %+v", err)
+		utils.RespondWithInternalServerError(w)
+		return
+	}
+
+	utils.RespondWithJson(w, http.StatusOK, nil)
+}
+
+// webhook
+func (h *Handler) StatEndSession(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
 		SessionId string `json:"sessionId,omitempty"`
 		Event     string `json:"event,omitempty"`
@@ -144,8 +198,8 @@ func (h *Handler) StatUpdateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	getSessionParam := database.GetDomainSessionParams{
-		EventID:  body.SessionId,
-		ClientID: clientId,
+		SessionID: body.SessionId,
+		ClientID:  clientId,
 	}
 
 	session, err := h.dbQueries.GetDomainSession(r.Context(), getSessionParam)

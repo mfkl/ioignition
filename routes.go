@@ -27,6 +27,10 @@ func registerRoutes(r chi.Router, h *handlers.Handler) {
 }
 
 func registerApiRoutes(r chi.Router, h *handlers.Handler) {
+	// start recording a new session
 	r.Post("/event/{clientId}", h.StatEvent)
-	r.Post("/event/{clientId}/end", h.StatUpdateEvent)
+	// update the url change in the session created above
+	r.Post("/event/{clientId}/url", h.StatUrlUpdate)
+	// end the session created in /event/{clientId} route
+	r.Post("/event/{clientId}/end", h.StatEndSession)
 }

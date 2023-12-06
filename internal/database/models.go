@@ -36,6 +36,7 @@ type DomainSession struct {
 
 type Url struct {
 	ID              uuid.UUID
+	EventName       string
 	Url             string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time

@@ -14,16 +14,17 @@ import (
 
 const createSessionUrl = `-- name: CreateSessionUrl :one
 INSERT INTO urls (
-  id, url, domain_session_id, created_at, updated_at
+  id, url, event_name, domain_session_id, created_at, updated_at
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6
 )
-RETURNING id, url, created_at, updated_at, domain_session_id
+RETURNING id, event_name, url, created_at, updated_at, domain_session_id
 `
 
 type CreateSessionUrlParams struct {
 	ID              uuid.UUID
 	Url             string
+	EventName       string
 	DomainSessionID uuid.UUID
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
@@ -33,6 +34,7 @@ func (q *Queries) CreateSessionUrl(ctx context.Context, arg CreateSessionUrlPara
 	row := q.db.QueryRowContext(ctx, createSessionUrl,
 		arg.ID,
 		arg.Url,
+		arg.EventName,
 		arg.DomainSessionID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
@@ -40,6 +42,7 @@ func (q *Queries) CreateSessionUrl(ctx context.Context, arg CreateSessionUrlPara
 	var i Url
 	err := row.Scan(
 		&i.ID,
+		&i.EventName,
 		&i.Url,
 		&i.CreatedAt,
 		&i.UpdatedAt,

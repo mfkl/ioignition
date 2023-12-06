@@ -97,13 +97,9 @@ function sendEvent(eventName, data) {
     payload = { sessionId, event: eventName }
     // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon
     keepalive = true
-  }
-
-  if (eventName === "sessionend") {
-    url = url + "/end"
-    payload = { sessionId, event: eventName }
-    // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon
-    keepalive = true
+  } else if (eventName === "pagechange") {
+    url = url + "/url"
+    payload = { sessionId, event: eventName, url: data.url }
   }
 
   fetch(`${data.apiHost}/event/${clientId}`, {
@@ -136,6 +132,10 @@ function trackPageview() {
   trackEvent('pageview');
 };
 
+function trackPageChange() {
+  trackEvent('pagechange');
+};
+
 function endPageView() {
   if (document.visibilityState === 'hidden') {
     trackEvent('sessionend')
@@ -151,7 +151,7 @@ function enableTracking() {
     history.pushState = function(data, title, url) {
       originalPushState.apply(this, [data, title, url]);
 
-      trackPageview();
+      trackPageChange();
     };
   }
 
