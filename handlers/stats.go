@@ -19,8 +19,8 @@ import (
 // webhook
 func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
-		EventId string `json:"eventid,omitempty"`
-		Event   string `json:"event,omitempty"`
+		SessionId string `json:"sessionId,omitempty"`
+		Event     string `json:"event,omitempty"`
 		// Note: domain is the registered domain against which you would check if
 		// it's registered to be using ioignition analytics
 		Domain string `json:"domain,omitempty"`
@@ -82,9 +82,13 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 	sessionParam := database.CreateDomainSessionParams{
 		ID:               uuid.New(),
 		ClientID:         clientId,
-		EventID:          body.EventId,
+		SessionID:        body.SessionId,
 		DomainID:         domain.ID,
 		SessionStartTime: time.Now(),
+		Referer:          h.NewNullString(body.Referrer),
+		DeviceWidth:      sql.NullInt32{Int32: int32(body.Width), Valid: true},
+		Browser:          h.NewNullString(body.Browser),
+		Platform:         h.NewNullString(body.Platform),
 		UpdatedAt:        time.Now(),
 		CreatedAt:        time.Now(),
 	}
@@ -96,34 +100,32 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	statParam := database.CreateDomainStatParams{
+	urlParam := database.CreateSessionUrlParams{
 		ID:              uuid.New(),
 		Url:             body.Url,
-		Referer:         h.NewNullString(body.Referrer),
-		DeviceWidth:     sql.NullInt32{Int32: int32(body.Width), Valid: true},
 		DomainSessionID: session.ID,
-		Browser:         h.NewNullString(body.Browser),
-		Platform:        h.NewNullString(body.Platform),
 		UpdatedAt:       time.Now(),
 		CreatedAt:       time.Now(),
 	}
 
-	_, err = h.dbQueries.CreateDomainStat(r.Context(), statParam)
+	_, err = h.dbQueries.CreateSessionUrl(r.Context(), urlParam)
 	if err != nil {
 		log.Printf("Error creating stat entry: %+v", err)
 		utils.RespondWithInternalServerError(w)
 		return
 	}
+
+	utils.RespondWithJson(w, http.StatusOK, nil)
 }
 
 // webhook
 func (h *Handler) StatUpdateEvent(w http.ResponseWriter, r *http.Request) {
 	type reqBody struct {
-		EventId string `json:"eventid,omitempty"`
-		Event   string `json:"event,omitempty"`
+		SessionId string `json:"sessionId,omitempty"`
+		Event     string `json:"event,omitempty"`
 	}
 
-	clientId := chi.URLParam(r, "eventId")
+	clientId := chi.URLParam(r, "clientId")
 
 	if clientId == "" {
 		log.Print("Client id missing")
@@ -142,7 +144,7 @@ func (h *Handler) StatUpdateEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	getSessionParam := database.GetDomainSessionParams{
-		EventID:  body.EventId,
+		EventID:  body.SessionId,
 		ClientID: clientId,
 	}
 

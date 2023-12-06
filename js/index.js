@@ -1,6 +1,8 @@
 "use strict";
 
 const localstoreId = 'ioEventId'
+const sessionId = generateUUID()
+let cleanup
 
 function generateUUID() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
@@ -81,26 +83,35 @@ function sendEvent(eventName, data) {
   }
 
   const clientId = getClientId()
-  const eventId = generateUUID()
+  let keepalive = false
 
-  const payload = {
-    eventid: eventId,
+  let url = `${data.apiHost}/event/${clientId}`
+  let payload = {
+    sessionId,
     event: eventName,
     ...data
   };
 
-  const req = new XMLHttpRequest();
-  req.open('POST', `${data.apiHost}/event/${clientId}`, true);
-  req.setRequestHeader('Content-Type', 'text/json');
-  req.send(JSON.stringify(payload));
+  if (eventName === "sessionend") {
+    url = url + "/end"
+    payload = { sessionId, event: eventName }
+    // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon
+    keepalive = true
+  }
 
-  req.onreadystatechange = () => {
-    if (req.readyState === 4) return;
-    // send some diagnostics??
-    if (eventName === 'sessionend') {
-      cleanup()
-    }
-  };
+  if (eventName === "sessionend") {
+    url = url + "/end"
+    payload = { sessionId, event: eventName }
+    // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon
+    keepalive = true
+  }
+
+  fetch(`${data.apiHost}/event/${clientId}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: new Headers().append('Content-Type', 'text/json'),
+    keepalive,
+  })
 }
 
 function config() {
@@ -126,16 +137,35 @@ function trackPageview() {
 };
 
 function endPageView() {
-  trackEvent('sessionend')
+  if (document.visibilityState === 'hidden') {
+    trackEvent('sessionend')
+    // cleanup
+    cleanup()
+  }
 }
 
 function enableTracking() {
-  window.addEventListener('beforeunload', endPageView)
-}
+  // Attach pushState and popState listeners
+  const originalPushState = history.pushState;
+  if (originalPushState) {
+    history.pushState = function(data, title, url) {
+      originalPushState.apply(this, [data, title, url]);
 
-function cleanup() {
-  window.removeEventListener('beforeunload', endPageView)
-}
+      trackPageview();
+    };
+  }
 
-trackPageview()
-enableTracking()
+  addEventListener('visibilitychange', endPageView)
+
+  // Trigger first page view
+  trackPageview();
+
+  return function cleanup() {
+    if (originalPushState) {
+      history.pushState = originalPushState;
+    }
+    removeEventListener('visibilitychange', endPageView)
+  };
+};
+
+cleanup = enableTracking()

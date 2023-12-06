@@ -22,23 +22,23 @@ type Domain struct {
 type DomainSession struct {
 	ID               uuid.UUID
 	ClientID         string
-	EventID          string
+	SessionID        string
 	SessionStartTime time.Time
 	SessionEndTime   sql.NullTime
+	Referer          sql.NullString
+	DeviceWidth      sql.NullInt32
+	Browser          sql.NullString
+	Platform         sql.NullString
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	DomainID         uuid.UUID
 }
 
-type DomainStat struct {
+type Url struct {
 	ID              uuid.UUID
+	Url             string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
-	Url             string
-	Referer         sql.NullString
-	DeviceWidth     sql.NullInt32
-	Browser         sql.NullString
-	Platform        sql.NullString
 	DomainSessionID uuid.UUID
 }
 

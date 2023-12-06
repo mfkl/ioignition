@@ -15,20 +15,24 @@ import (
 
 const createDomainSession = `-- name: CreateDomainSession :one
 INSERT INTO domain_sessions (
-  id,client_id, event_id, session_start_time, session_end_time, domain_id, created_at, updated_at
+  id, client_id, session_id, session_start_time, session_end_time, domain_id, referer, device_width, browser, platform, created_at, updated_at
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 )
-RETURNING id, client_id, event_id, session_start_time, session_end_time, created_at, updated_at, domain_id
+RETURNING id, client_id, session_id, session_start_time, session_end_time, referer, device_width, browser, platform, created_at, updated_at, domain_id
 `
 
 type CreateDomainSessionParams struct {
 	ID               uuid.UUID
 	ClientID         string
-	EventID          string
+	SessionID        string
 	SessionStartTime time.Time
 	SessionEndTime   sql.NullTime
 	DomainID         uuid.UUID
+	Referer          sql.NullString
+	DeviceWidth      sql.NullInt32
+	Browser          sql.NullString
+	Platform         sql.NullString
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }
@@ -37,10 +41,14 @@ func (q *Queries) CreateDomainSession(ctx context.Context, arg CreateDomainSessi
 	row := q.db.QueryRowContext(ctx, createDomainSession,
 		arg.ID,
 		arg.ClientID,
-		arg.EventID,
+		arg.SessionID,
 		arg.SessionStartTime,
 		arg.SessionEndTime,
 		arg.DomainID,
+		arg.Referer,
+		arg.DeviceWidth,
+		arg.Browser,
+		arg.Platform,
 		arg.CreatedAt,
 		arg.UpdatedAt,
 	)
@@ -48,9 +56,13 @@ func (q *Queries) CreateDomainSession(ctx context.Context, arg CreateDomainSessi
 	err := row.Scan(
 		&i.ID,
 		&i.ClientID,
-		&i.EventID,
+		&i.SessionID,
 		&i.SessionStartTime,
 		&i.SessionEndTime,
+		&i.Referer,
+		&i.DeviceWidth,
+		&i.Browser,
+		&i.Platform,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DomainID,
@@ -59,24 +71,28 @@ func (q *Queries) CreateDomainSession(ctx context.Context, arg CreateDomainSessi
 }
 
 const getDomainSession = `-- name: GetDomainSession :one
-SELECT id, client_id, event_id, session_start_time, session_end_time, created_at, updated_at, domain_id FROM domain_sessions
-WHERE client_id = $1 AND event_id = $2
+SELECT id, client_id, session_id, session_start_time, session_end_time, referer, device_width, browser, platform, created_at, updated_at, domain_id FROM domain_sessions
+WHERE client_id = $1 AND session_id = $2
 `
 
 type GetDomainSessionParams struct {
-	ClientID string
-	EventID  string
+	ClientID  string
+	SessionID string
 }
 
 func (q *Queries) GetDomainSession(ctx context.Context, arg GetDomainSessionParams) (DomainSession, error) {
-	row := q.db.QueryRowContext(ctx, getDomainSession, arg.ClientID, arg.EventID)
+	row := q.db.QueryRowContext(ctx, getDomainSession, arg.ClientID, arg.SessionID)
 	var i DomainSession
 	err := row.Scan(
 		&i.ID,
 		&i.ClientID,
-		&i.EventID,
+		&i.SessionID,
 		&i.SessionStartTime,
 		&i.SessionEndTime,
+		&i.Referer,
+		&i.DeviceWidth,
+		&i.Browser,
+		&i.Platform,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.DomainID,

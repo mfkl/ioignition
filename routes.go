@@ -28,5 +28,5 @@ func registerRoutes(r chi.Router, h *handlers.Handler) {
 
 func registerApiRoutes(r chi.Router, h *handlers.Handler) {
 	r.Post("/event/{clientId}", h.StatEvent)
-	r.Put("/event/{clientId}", h.StatUpdateEvent)
+	r.Post("/event/{clientId}/end", h.StatUpdateEvent)
 }

@@ -1,16 +1,12 @@
 -- +goose Up
-CREATE TABLE IF NOT EXISTS domain_stats (
+CREATE TABLE IF NOT EXISTS urls (
   id UUID PRIMARY KEY,
+  url TEXT NOT NULL,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL,
-  url TEXT NOT NULL,
-  referer TEXT,
-  device_width INTEGER,
-  browser TEXT,
-  platform TEXT,
   domain_session_id UUID NOT NULL,
   FOREIGN KEY (domain_session_id) REFERENCES domain_sessions(id) ON DELETE CASCADE
 );
 
 -- +goose Down
-DROP TABLE IF EXISTS domain_stats;
+DROP TABLE IF EXISTS urls;
