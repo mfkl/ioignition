@@ -9,6 +9,11 @@ import (
 )
 
 func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request, u database.User) {
+	if isHtmxRequest(r) {
+		view.Home(u.Email).Render(r.Context(), w)
+		return
+	}
+
 	view.Layout(view.Home(u.Email)).Render(r.Context(), w)
 }
 
@@ -18,6 +23,12 @@ func (h *Handler) LandingPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) DomainStatsPage(w http.ResponseWriter, r *http.Request, u database.User) {
 	domain := chi.URLParam(r, "domain")
+
+	if isHtmxRequest(r) {
+		view.DomainStats(u.Email, domain).Render(r.Context(), w)
+		return
+	}
+
 	view.Layout(view.DomainStats(u.Email, domain)).Render(r.Context(), w)
 }
 
@@ -30,5 +41,10 @@ func (h *Handler) LoginForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AddDomainPage(w http.ResponseWriter, r *http.Request, u database.User) {
+	if isHtmxRequest(r) {
+		view.AddDomain(u.Email).Render(r.Context(), w)
+		return
+	}
+
 	view.Layout(view.AddDomain(u.Email)).Render(r.Context(), w)
 }

@@ -67,7 +67,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		PasswordHash: string(hash),
 	}
 
-	u, err := h.db.CreateUser(r.Context(), createUserParam)
+	u, err := h.dbQueries.CreateUser(r.Context(), createUserParam)
 	if err != nil {
 		if e, ok := err.(*pq.Error); ok {
 			if e.Code == UniqueViolationCode {
@@ -89,7 +89,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.SetSesionCookie(w, r, accessToken)
-	w.Header().Set("HX-Replace-Url", "/")
+	w.Header().Set("HX-Push-Url", "/")
 	// render home page
 	h.HomePage(w, r, u)
 }
@@ -116,7 +116,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := h.db.GetUser(r.Context(), email.Address)
+	u, err := h.dbQueries.GetUser(r.Context(), email.Address)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			utils.RespondWithError(w, http.StatusBadRequest, errors.New("email does not exists"))
@@ -147,7 +147,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	// * save token by device type?
 	h.SetSesionCookie(w, r, accessToken)
 
-	w.Header().Set("HX-Replace-Url", "/")
+	w.Header().Set("HX-Push-Url", "/")
 
 	// render home page
 	h.HomePage(w, r, u)

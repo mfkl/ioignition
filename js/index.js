@@ -1,94 +1,187 @@
 "use strict";
 
 const localstoreId = 'ioEventId'
-let startTime
+const domain = document.currentScript.getAttribute('data-domain')
+const sessionId = generateUUID()
+let cleanup
 
-function generateEventId() {
-  const id = 'io-' + new Date().getTime() + '-' + Math.random().toString(36).substring(2, 9);
+function generateUUID() {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
+    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+  );
+}
+
+function generateId() {
+  const id = 'io-' + generateUUID()
   try {
     localStorage.setItem(localstoreId, id)
-  } catch(err) {}
+  } catch (err) { }
 
   return id
 }
 
-function getEventId() {
+function getClientId() {
   let uId = ''
   try {
     uId = localStorage.getItem(localstoreId)
-  } catch (error) {}
-  
+  } catch (error) { }
+
   if (uId) return uId
 
-  return generateEventId()
+  return generateId()
+}
+
+function getBrowserAndPlatform() {
+  const userAgent = navigator.userAgent;
+  const platformInfo = navigator.platform;
+  let browser, platform;
+
+  // Detecting browser name
+  if (userAgent.includes("Firefox")) {
+    browser = "Mozilla Firefox";
+  } else if (userAgent.includes("SamsungBrowser")) {
+    browser = "Samsung Internet";
+  } else if (userAgent.includes("Opera") || userAgent.includes("OPR")) {
+    browser = "Opera";
+  } else if (userAgent.includes("Trident")) {
+    browser = "Internet Explorer";
+  } else if (userAgent.includes("Edge")) {
+    browser = "Edge";
+  } else if (userAgent.includes("Chrome")) {
+    browser = "Chrome";
+  } else if (userAgent.includes("Safari")) {
+    browser = "Safari";
+  } else {
+    browser = "unknown";
+  }
+
+  // Detecting platform (operating system)
+  if (platformInfo.startsWith("Win")) {
+    platform = "Windows";
+  } else if (platformInfo.startsWith("Mac")) {
+    platform = "MacOS";
+  } else if (platformInfo.startsWith("Linux")) {
+    platform = "Linux";
+  } else if (platformInfo.startsWith("iPhone") || platformInfo.startsWith("iPad")) {
+    platform = "iOS";
+  } else if (platformInfo.startsWith("Android")) {
+    platform = "Android";
+  } else {
+    platform = "unknown";
+  }
+
+  return { browser, platform };
 }
 
 function sendEvent(eventName, data) {
-  const isLocalhost =
+  const shouldIgnore =
     /^localhost$|^127(?:\.[0-9]+){0,2}\.[0-9]+$|^(?:0*:)*?:?0*1$/.test(
       location.hostname
     ) || location.protocol === 'file:';
 
-  if (isLocalhost) {
+  if (shouldIgnore) {
     // return ---> uncomment
   }
 
-  const eventId = getEventId()
-  const sessionTime = Date.now() - startTime
-  
-  const payload = {
-    n: eventName,
-    u: data.url,
-    d: data.domain,
-    r: data.referrer,
-    w: data.deviceWidth,
-    a: data.userAgent,
-    t: sessionTime
+  const clientId = getClientId()
+  let keepalive = false
+
+  let url = `${data.apiHost}/event/${clientId}`
+  let payload = {
+    sessionId,
+    event: eventName,
+    ...data
   };
 
-  const req = new XMLHttpRequest();
-  req.open('POST', `${data.apiHost}/api/event/${eventId}`, true);
-  req.setRequestHeader('Content-Type', 'text/plain');
-  req.send(JSON.stringify(payload));
+  if (eventName === "sessionend") {
+    url = url + "/end"
+    payload = { sessionId, event: eventName }
+    // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon
+    keepalive = true
+  } else if (eventName === "pagechange") {
+    url = url + "/url"
+    payload = { sessionId, event: eventName, url: data.url }
+  }
 
-  req.onreadystatechange = () => {
-    if (req.readyState === 4) return;
-    // send some diagnostics??
-    cleanup()
-  };
+  fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+    headers: new Headers().append('Content-Type', 'text/json'),
+    keepalive,
+  })
 }
 
 function config() {
+  const { browser, platform } = getBrowserAndPlatform()
+
   return {
     url: location.href,
-    domain: location.hostname,
-    referrer: document.referrer || null,
+    referrer: document.referrer || "",
+    domain,
     deviceWidth: window.innerWidth,
-    userAgent: window.navigator.userAgent,
-    apiHost: 'https://ioignition.com/api',
+    browser,
+    platform,
+    apiHost: 'http://localhost:8080/api',
   }
 }
 
-function trackEvent (eventName, eventData) {
-  sendEvent(eventName, { ...config(), ...eventData });
+function trackEvent(eventName) {
+  sendEvent(eventName, config());
 };
 
-function trackPageview (eventData) {
-  trackEvent('pageview', eventData);
+function trackPageview() {
+  trackEvent('pageview');
 };
 
-function startTimeListener() {
-  startTime = Date.now()
+function trackPageChange() {
+  trackEvent('pagechange');
+};
+
+function endPageView() {
+  if (document.visibilityState === 'hidden') {
+    trackEvent('sessionend')
+    // cleanup
+    cleanup()
+  }
 }
 
 function enableTracking() {
-  window.addEventListener('DOMContentLoaded', startTimeListener)
-  window.addEventListener('beforeunload', trackPageview)
-}
+  const originalPushState = history.pushState;
+  const originaReplaceState = history.replaceState
 
-function cleanup() {
-  window.removeEventListener('DOMContentLoaded', startTimeListener)
-  window.removeEventListener('beforeunload', trackPageview)
-}
+  if (originalPushState) {
+    history.pushState = function(state, unused, url) {
+      originalPushState.apply(this, [state, unused, url]);
 
-enableTracking()
+      trackPageChange();
+    };
+  }
+
+  if (originaReplaceState) {
+    history.replaceState = function(state, unused, url) {
+      originaReplaceState.apply(this, [state, unused, url]);
+
+      trackPageChange();
+    };
+  }
+
+  addEventListener('visibilitychange', endPageView)
+
+  // Trigger first page view
+  trackPageview();
+
+  // unsub 
+  return function() {
+    if (originalPushState) {
+      history.pushState = originalPushState;
+    }
+
+    if (originaReplaceState) {
+      history.replaceState = originaReplaceState
+    }
+
+    removeEventListener('visibilitychange', endPageView)
+  };
+};
+
+cleanup = enableTracking()

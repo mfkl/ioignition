@@ -48,6 +48,9 @@ func (h *Handler) AddDomain(w http.ResponseWriter, r *http.Request, user databas
 		return
 	}
 
+	// strip 'www.'
+	body.Domain = strings.Trim(body.Domain, "www.")
+
 	// url.Parse does not work as expected without scheme
 	if !strings.Contains(body.Domain, "://") {
 		body.Domain = "https://" + body.Domain
@@ -67,7 +70,7 @@ func (h *Handler) AddDomain(w http.ResponseWriter, r *http.Request, user databas
 		UpdatedAt: time.Now(),
 	}
 
-	d, err := h.db.CreateDomain(r.Context(), param)
+	d, err := h.dbQueries.CreateDomain(r.Context(), param)
 	if err != nil {
 		if e, ok := err.(*pq.Error); ok {
 			if e.Code == UniqueViolationCode {
@@ -84,7 +87,7 @@ func (h *Handler) AddDomain(w http.ResponseWriter, r *http.Request, user databas
 }
 
 func (h *Handler) ListDomains(w http.ResponseWriter, r *http.Request, user database.User) {
-	domains, err := h.db.ListDomains(r.Context(), user.ID)
+	domains, err := h.dbQueries.ListDomains(r.Context(), user.ID)
 	if err != nil {
 		log.Print("Err getting domains: ", err)
 		utils.RespondWithInternalServerError(w)

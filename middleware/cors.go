@@ -30,3 +30,10 @@ var options = cors.Options{
 func Cors() func(next http.Handler) http.Handler {
 	return cors.Handler(options)
 }
+
+func ExternalApiCors() func(next http.Handler) http.Handler {
+	externalOptions := options
+	externalOptions.AllowedMethods = []string{"POST", "PUT", "OPTION"}
+
+	return cors.Handler(externalOptions)
+}

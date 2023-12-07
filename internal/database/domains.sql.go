@@ -48,6 +48,25 @@ func (q *Queries) CreateDomain(ctx context.Context, arg CreateDomainParams) (Dom
 	return i, err
 }
 
+const getDomain = `-- name: GetDomain :one
+SELECT id, created_at, updated_at, url, user_id FROM domains 
+WHERE url = $1
+LIMIT 1
+`
+
+func (q *Queries) GetDomain(ctx context.Context, url string) (Domain, error) {
+	row := q.db.QueryRowContext(ctx, getDomain, url)
+	var i Domain
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Url,
+		&i.UserID,
+	)
+	return i, err
+}
+
 const listDomains = `-- name: ListDomains :many
 SELECT id, created_at, updated_at, url, user_id FROM domains 
 WHERE user_id = $1

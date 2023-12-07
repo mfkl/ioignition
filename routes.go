@@ -25,3 +25,13 @@ func registerRoutes(r chi.Router, h *handlers.Handler) {
 	// Domain Stats Routes
 	r.Get("/{domain}", h.Authed(h.DomainStatsPage))
 }
+
+// the following requests are made my the script running on users client
+func registerApiRoutes(r chi.Router, h *handlers.Handler) {
+	// start recording a new session
+	r.Post("/event/{clientId}", h.StatEvent)
+	// update the url change in the session created above
+	r.Post("/event/{clientId}/url", h.StatUrlUpdate)
+	// end the session created in /event/{clientId} route
+	r.Post("/event/{clientId}/end", h.StatEndSession)
+}

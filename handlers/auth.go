@@ -21,7 +21,7 @@ func (h *Handler) Authed(handler authedHandler) http.HandlerFunc {
 		}
 
 		// this is an internal error, should be handled better
-		user, err := h.db.GetUserById(r.Context(), userId)
+		user, err := h.dbQueries.GetUserById(r.Context(), userId)
 		if err != nil {
 			log.Printf("Error getting user by id: %+v", err)
 			h.LandingPage(w, r)

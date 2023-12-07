@@ -45,12 +45,18 @@ func main() {
 
 	jwtSecret := os.Getenv("JWT_SECRET")
 	dbQueries := database.New(db)
-	h := handlers.NewHandler(dbQueries, jwtSecret)
+	h := handlers.NewHandler(db, dbQueries, jwtSecret)
 
 	r := chi.NewRouter()
+
 	r.Use(m.Logger)
 	r.Use(middleware.Cors())
-	r.Use(httprate.LimitByIP(100, 1*time.Minute))
+
+	// apiRouter
+	apiRouter := chi.NewRouter()
+	apiRouter.Use(m.Logger)
+	apiRouter.Use(middleware.ExternalApiCors())
+	apiRouter.Use(httprate.LimitByIP(100, time.Minute))
 
 	// Create a route along / that will serve contents from
 	// the public folder
@@ -60,6 +66,9 @@ func main() {
 
 	// Register Routes ----------------
 	registerRoutes(r, h)
+	registerApiRoutes(apiRouter, h)
+
+	r.Mount("/api", apiRouter)
 
 	// Server -------------------------
 	server := http.Server{
