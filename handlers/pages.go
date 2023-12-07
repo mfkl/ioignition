@@ -36,5 +36,10 @@ func (h *Handler) LoginForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) AddDomainPage(w http.ResponseWriter, r *http.Request, u database.User) {
+	if isHtmxRequest(r) {
+		view.AddDomain(u.Email).Render(r.Context(), w)
+		return
+	}
+
 	view.Layout(view.AddDomain(u.Email)).Render(r.Context(), w)
 }
