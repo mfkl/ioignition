@@ -18,6 +18,12 @@ func (h *Handler) LandingPage(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) DomainStatsPage(w http.ResponseWriter, r *http.Request, u database.User) {
 	domain := chi.URLParam(r, "domain")
+
+	if isHtmxRequest(r) {
+		view.DomainStats(u.Email, domain).Render(r.Context(), w)
+		return
+	}
+
 	view.Layout(view.DomainStats(u.Email, domain)).Render(r.Context(), w)
 }
 

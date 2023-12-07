@@ -89,7 +89,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.SetSesionCookie(w, r, accessToken)
-	w.Header().Set("HX-Replace-Url", "/")
+	w.Header().Set("HX-Push-Url", "/")
 	// render home page
 	h.HomePage(w, r, u)
 }
@@ -147,7 +147,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	// * save token by device type?
 	h.SetSesionCookie(w, r, accessToken)
 
-	w.Header().Set("HX-Replace-Url", "/")
+	w.Header().Set("HX-Push-Url", "/")
 
 	// render home page
 	h.HomePage(w, r, u)

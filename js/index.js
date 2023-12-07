@@ -1,6 +1,7 @@
 "use strict";
 
 const localstoreId = 'ioEventId'
+const domain = document.currentScript.getAttribute('data-domain')
 const sessionId = generateUUID()
 let cleanup
 
@@ -102,7 +103,7 @@ function sendEvent(eventName, data) {
     payload = { sessionId, event: eventName, url: data.url }
   }
 
-  fetch(`${data.apiHost}/event/${clientId}`, {
+  fetch(url, {
     method: 'POST',
     body: JSON.stringify(payload),
     headers: new Headers().append('Content-Type', 'text/json'),
@@ -115,8 +116,8 @@ function config() {
 
   return {
     url: location.href,
-    domain: document.currentScript.getAttribute('data-domain'),
     referrer: document.referrer || "",
+    domain,
     deviceWidth: window.innerWidth,
     browser,
     platform,
@@ -145,11 +146,20 @@ function endPageView() {
 }
 
 function enableTracking() {
-  // Attach pushState and popState listeners
   const originalPushState = history.pushState;
+  const originaReplaceState = history.replaceState
+
   if (originalPushState) {
-    history.pushState = function(data, title, url) {
-      originalPushState.apply(this, [data, title, url]);
+    history.pushState = function(state, unused, url) {
+      originalPushState.apply(this, [state, unused, url]);
+
+      trackPageChange();
+    };
+  }
+
+  if (originaReplaceState) {
+    history.replaceState = function(state, unused, url) {
+      originaReplaceState.apply(this, [state, unused, url]);
 
       trackPageChange();
     };
@@ -163,6 +173,10 @@ function enableTracking() {
   return function cleanup() {
     if (originalPushState) {
       history.pushState = originalPushState;
+    }
+
+    if (originaReplaceState) {
+      history.replaceState = originaReplaceState
     }
     removeEventListener('visibilitychange', endPageView)
   };

@@ -35,3 +35,8 @@ func (h *Handler) NewNullString(s string) sql.NullString {
 		Valid:  true,
 	}
 }
+
+// Render whole page with layout if not
+func isHtmxRequest(r *http.Request) bool {
+	return r.Header.Get("HX-Request") == "true"
+}

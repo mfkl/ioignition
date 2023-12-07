@@ -205,7 +205,6 @@ func (h *Handler) StatEndSession(w http.ResponseWriter, r *http.Request) {
 	session, err := h.dbQueries.GetDomainSession(r.Context(), getSessionParam)
 	if err != nil {
 		log.Printf("Error getting session: %+v", err)
-		utils.RespondWithInternalServerError(w)
 		return
 	}
 
@@ -219,8 +218,7 @@ func (h *Handler) StatEndSession(w http.ResponseWriter, r *http.Request) {
 
 	err = h.dbQueries.UpdateDomainSession(r.Context(), updateSessionParam)
 	if err != nil {
-		log.Printf("Error creating session: %+v", err)
-		utils.RespondWithInternalServerError(w)
+		log.Printf("Error ending session: %+v", err)
 		return
 	}
 
