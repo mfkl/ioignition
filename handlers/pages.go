@@ -9,6 +9,11 @@ import (
 )
 
 func (h *Handler) HomePage(w http.ResponseWriter, r *http.Request, u database.User) {
+	if isHtmxRequest(r) {
+		view.Home(u.Email).Render(r.Context(), w)
+		return
+	}
+
 	view.Layout(view.Home(u.Email)).Render(r.Context(), w)
 }
 

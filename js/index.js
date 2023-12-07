@@ -74,12 +74,12 @@ function getBrowserAndPlatform() {
 }
 
 function sendEvent(eventName, data) {
-  const isLocalhost =
+  const shouldIgnore =
     /^localhost$|^127(?:\.[0-9]+){0,2}\.[0-9]+$|^(?:0*:)*?:?0*1$/.test(
       location.hostname
     ) || location.protocol === 'file:';
 
-  if (isLocalhost) {
+  if (shouldIgnore) {
     // return ---> uncomment
   }
 
@@ -170,7 +170,8 @@ function enableTracking() {
   // Trigger first page view
   trackPageview();
 
-  return function cleanup() {
+  // unsub 
+  return function() {
     if (originalPushState) {
       history.pushState = originalPushState;
     }
@@ -178,6 +179,7 @@ function enableTracking() {
     if (originaReplaceState) {
       history.replaceState = originaReplaceState
     }
+
     removeEventListener('visibilitychange', endPageView)
   };
 };
