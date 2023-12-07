@@ -28,4 +28,4 @@ view/*_templ.go
 /tmp
 
 # tailwind
-output.css
+public/css/output.css
