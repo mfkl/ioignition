@@ -26,3 +26,6 @@ view/*_templ.go
 
 # air tmp files
 /tmp
+
+# tailwind
+output.css
