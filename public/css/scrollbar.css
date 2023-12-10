@@ -1,0 +1,20 @@
+/* For Webkit (Chrome, Edge) and Blink (Opera) browsers */
+::-webkit-scrollbar {
+    width: 12px; /* Adjust the width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+    background: #1f2937; /* bg-zinc-900 */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #4b5563; /* gray-600 */
+    border-radius: 6px;
+    border: 3px solid #1f2937; /* bg-zinc-900 */
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #ef4444 #1f2937; /* thumb and track */
+}

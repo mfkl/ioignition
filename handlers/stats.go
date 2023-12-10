@@ -1,226 +1,118 @@
 package handlers
 
 import (
-	"database/sql"
-	"encoding/json"
-	"errors"
 	"ioignition/internal/database"
 	"ioignition/utils"
+	"ioignition/view"
 	"log"
 	"net/http"
-	"net/url"
-	"strings"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
 )
 
-// helper
-func (h *Handler) PersistUrl(r *http.Request, url string, event string, sessionId uuid.UUID) (database.Url, error) {
-	urlParam := database.CreateSessionUrlParams{
-		ID:              uuid.New(),
-		Url:             url,
-		EventName:       event,
-		DomainSessionID: sessionId,
-		UpdatedAt:       time.Now(),
-		CreatedAt:       time.Now(),
-	}
+func (h *Handler) DomainStats(w http.ResponseWriter, r *http.Request, u database.User) {
+	domain := chi.URLParam(r, "domain")
 
-	return h.dbQueries.CreateSessionUrl(r.Context(), urlParam)
-}
-
-// webhook
-func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
-	type reqBody struct {
-		SessionId string `json:"sessionId,omitempty"`
-		Event     string `json:"event,omitempty"`
-		// Note: domain is the registered domain against which you would check if
-		// it's registered to be using ioignition analytics
-		Domain string `json:"domain,omitempty"`
-		// URL is the url the analytics data was sent from
-		Url      string `json:"url,omitempty"`
-		Referrer string `json:"referrer,omitempty"`
-		Width    int    `json:"width,omitempty"`
-		Browser  string `json:"browser,omitempty"`
-		Platform string `json:"platform,omitempty"`
-	}
-
-	clientId := chi.URLParam(r, "clientId")
-
-	if clientId == "" {
-		log.Print("Client id missing")
-		utils.RespondWithError(w, http.StatusBadRequest, errors.New("client id cannot be empty"))
-		return
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	body := &reqBody{}
-
-	err := decoder.Decode(body)
+	d, err := h.dbQueries.GetDomain(r.Context(), domain)
 	if err != nil {
 		log.Printf("Error decoding json: %+v", err)
 		utils.RespondWithInternalServerError(w)
 		return
 	}
 
-	// TODO: refactor, duplicated from domains.go
-	// strip 'www.'
-	body.Domain = strings.Trim(body.Domain, "www.")
+	intervalString := chi.URLParam(r, "interval")
+	unit := chi.URLParam(r, "unit")
 
-	// url.Parse does not work as expected without scheme
-	if !strings.Contains(body.Domain, "://") {
-		body.Domain = "https://" + body.Domain
+	// default to 30 days
+	if intervalString == "" || unit == "" {
+		intervalString = "30"
+		unit = "D"
 	}
 
-	u, err := url.Parse(body.Domain)
+	interval, err := strconv.Atoi(intervalString)
 	if err != nil {
-		utils.RespondWithError(w, http.StatusBadRequest, errors.New("domain is not valid"))
-		return
+		interval = 30
+		unit = "D"
 	}
 
-	domain, err := h.dbQueries.GetDomain(r.Context(), u.Host)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			utils.RespondWithError(w, http.StatusBadRequest, errors.New("domain is not registered"))
-			return
-		}
+	param := database.GetSessionStatsParams{
+		DomainID:        d.ID,
+		Interval:        time.Now().AddDate(0, 0, -interval),
+		CompareInterval: time.Now().AddDate(0, 0, -(2 * interval)),
+	}
 
-		log.Printf("Error getting domain: %+v", err)
+	stats, err := h.dbQueries.GetSessionStats(r.Context(), param)
+	if err != nil {
+		log.Printf("Error getting stats: %+v", err)
 		utils.RespondWithInternalServerError(w)
 		return
 	}
 
-	// there is no session end time as the StatEvent api only registers the
-	// start of a session
-	sessionParam := database.CreateDomainSessionParams{
-		ID:               uuid.New(),
-		ClientID:         clientId,
-		SessionID:        body.SessionId,
-		DomainID:         domain.ID,
-		SessionStartTime: time.Now(),
-		Referer:          h.NewNullString(body.Referrer),
-		DeviceWidth:      sql.NullInt32{Int32: int32(body.Width), Valid: true},
-		Browser:          h.NewNullString(body.Browser),
-		Platform:         h.NewNullString(body.Platform),
-		UpdatedAt:        time.Now(),
-		CreatedAt:        time.Now(),
-	}
-
-	session, err := h.dbQueries.CreateDomainSession(r.Context(), sessionParam)
+	urlStats, err := h.dbQueries.GetPageViewCount(r.Context(), database.GetPageViewCountParams(param))
 	if err != nil {
-		log.Printf("Error creating session: %+v", err)
+		log.Printf("Error getting url stats: %+v", err)
 		utils.RespondWithInternalServerError(w)
 		return
 	}
 
-	_, err = h.PersistUrl(r, body.Url, body.Event, session.ID)
-	if err != nil {
-		log.Printf("Error creating stat entry: %+v", err)
-		utils.RespondWithInternalServerError(w)
-		return
-	}
-
-	utils.RespondWithJson(w, http.StatusOK, nil)
+	view.Metrics(stats, urlStats).Render(r.Context(), w)
 }
 
-// webhook
-func (h *Handler) StatUrlUpdate(w http.ResponseWriter, r *http.Request) {
-	type reqBody struct {
-		SessionId string `json:"sessionId,omitempty"`
-		Event     string `json:"event,omitempty"`
-		Url       string `json:"url,omitempty"`
-	}
+func (h *Handler) GraphStats(w http.ResponseWriter, r *http.Request, u database.User) {
+	domain := chi.URLParam(r, "domain")
 
-	clientId := chi.URLParam(r, "clientId")
-
-	if clientId == "" {
-		log.Print("Client id missing")
-		utils.RespondWithError(w, http.StatusBadRequest, errors.New("client id cannot be empty"))
-		return
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	body := &reqBody{}
-
-	err := decoder.Decode(body)
+	d, err := h.dbQueries.GetDomain(r.Context(), domain)
 	if err != nil {
 		log.Printf("Error decoding json: %+v", err)
 		utils.RespondWithInternalServerError(w)
 		return
 	}
 
-	getSessionParam := database.GetDomainSessionParams{
-		SessionID: body.SessionId,
-		ClientID:  clientId,
+	intervalString := chi.URLParam(r, "interval")
+	unit := chi.URLParam(r, "unit")
+
+	// default to 30 days
+	if intervalString == "" || unit == "" {
+		intervalString = "30"
+		unit = "D"
 	}
 
-	session, err := h.dbQueries.GetDomainSession(r.Context(), getSessionParam)
+	interval, err := strconv.Atoi(intervalString)
 	if err != nil {
-		log.Printf("Error getting session: %+v", err)
+		interval = 30
+		unit = "D"
+	}
+
+	// FIXME: right now I'm hard coding the step but depending on the unit, choose
+	// a strategy that will return months, hours, years etc
+	param := database.GetGraphStatsParams{
+		DomainID:      d.ID,
+		Step:          5,
+		IntervalStart: time.Now().AddDate(0, 0, -interval),
+	}
+
+	stats, err := h.dbQueries.GetGraphStats(r.Context(), param)
+	if err != nil {
+		log.Printf("Error getting stats: %+v", err)
 		utils.RespondWithInternalServerError(w)
 		return
 	}
 
-	_, err = h.PersistUrl(r, body.Url, body.Event, session.ID)
-	if err != nil {
-		log.Printf("Error creating stat entry: %+v", err)
-		utils.RespondWithInternalServerError(w)
-		return
+	var labels []string
+	var dataPoints []int
+
+	for _, s := range stats {
+		labels = append(labels, formattedTime(s.DrStartDate))
+		dataPoints = append(dataPoints, int(s.SessionCount))
 	}
 
-	utils.RespondWithJson(w, http.StatusOK, nil)
+	view.Graph(labels, dataPoints, "Visitors").Render(r.Context(), w)
 }
 
-// webhook
-func (h *Handler) StatEndSession(w http.ResponseWriter, r *http.Request) {
-	type reqBody struct {
-		SessionId string `json:"sessionId,omitempty"`
-		Event     string `json:"event,omitempty"`
-	}
+func formattedTime(t time.Time) string {
+	layout := "02 Jan"
 
-	clientId := chi.URLParam(r, "clientId")
-
-	if clientId == "" {
-		log.Print("Client id missing")
-		utils.RespondWithError(w, http.StatusBadRequest, errors.New("client id cannot be empty"))
-		return
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	body := &reqBody{}
-
-	err := decoder.Decode(body)
-	if err != nil {
-		log.Printf("Error decoding json: %+v", err)
-		utils.RespondWithInternalServerError(w)
-		return
-	}
-
-	getSessionParam := database.GetDomainSessionParams{
-		SessionID: body.SessionId,
-		ClientID:  clientId,
-	}
-
-	session, err := h.dbQueries.GetDomainSession(r.Context(), getSessionParam)
-	if err != nil {
-		log.Printf("Error getting session: %+v", err)
-		return
-	}
-
-	// there is no session end time as the StatEvent api only registers the
-	// start of a session
-	updateSessionParam := database.UpdateDomainSessionParams{
-		ID:             session.ID,
-		SessionEndTime: sql.NullTime{Time: time.Now(), Valid: true},
-		UpdatedAt:      time.Now(),
-	}
-
-	err = h.dbQueries.UpdateDomainSession(r.Context(), updateSessionParam)
-	if err != nil {
-		log.Printf("Error ending session: %+v", err)
-		return
-	}
-
-	utils.RespondWithJson(w, http.StatusOK, nil)
+	return t.Format(layout)
 }

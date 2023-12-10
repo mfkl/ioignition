@@ -1,0 +1,57 @@
+package view
+
+script Chart(labels []string, data []int, yTitle string) {
+       const ctx = document.getElementById('largeGraph').getContext('2d');
+       const visitorChart = new Chart(ctx, {
+         type: 'line',
+         data: {
+           labels,
+           datasets: [{
+             data,
+             backgroundColor: 'rgba(16, 185, 129, 0.2)', // Emerald-500
+             fill: "start",
+             borderColor: 'rgba(16, 185, 129)', // Emerald-500
+             borderWidth: 2
+           }]
+         },
+         options: {
+           plugins: {
+             legend: {
+               display:false,
+             },
+           },
+           scales: {
+             y: {
+               beginAtZero: true,
+               stepSize: 10, // Adjust this value as needed for suitable intervals
+               title: {
+                 display: true,
+                 text: yTitle,
+                 color: '#10b981',
+                 font: {
+                   size: 16,
+                   weight: 'bold',
+                   lineHeight: 1.2,
+                 },
+               },
+             },
+             x: {
+               autoSkip: true,
+               maxTicksLimit: 6 // Adjust to control the number of labels on X-axis
+              }
+           },
+           elements: {
+             line: {
+               tension: 0.4
+             }
+           }
+         }
+       });
+}
+
+templ Graph(labels []string, data []int, yTitle string) {
+	<figure class="shadow-lg rounded-2xl bg-zinc-800 p-4">
+		<canvas id="largeGraph"></canvas>
+		@Chart(labels, data, yTitle)
+	</figure>
+}

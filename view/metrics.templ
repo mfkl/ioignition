@@ -1,0 +1,122 @@
+package view
+
+import "ioignition/internal/database"
+import "fmt"
+import "time"
+
+const up = "↑"
+const down = "↓"
+
+func getDiffPercent(now, prior int) string {
+	var diff int
+
+	if prior != 0 {
+		diff = (now - prior) / prior
+	} else {
+		diff = 1
+	}
+
+	change := up
+
+	if diff < 0 {
+		change = down
+		diff = -diff
+	}
+
+	diffPercent := diff * 100
+
+	return fmt.Sprintf("%s %d%%", change, diffPercent)
+}
+
+func formatDuration(duration time.Duration) string {
+	// Extract hours, minutes, and seconds from the Duration
+	hours := duration / time.Hour
+	duration -= hours * time.Hour
+	minutes := duration / time.Minute
+	duration -= minutes * time.Minute
+	seconds := duration / time.Second
+
+	// Build the formatted string
+	var result string
+
+	if hours > 0 {
+		result += fmt.Sprintf("%dh ", hours)
+	}
+
+	if minutes > 0 || hours > 0 { // Include minutes if there are hours
+		result += fmt.Sprintf("%dm ", minutes)
+	}
+
+	if seconds > 0 || minutes > 0 || hours > 0 { // Include seconds if there are minutes or hours
+		result += fmt.Sprintf("%ds", seconds)
+	}
+
+	return result
+}
+
+func getDuration(seconds float64) string {
+	roundedSec := int(seconds)
+
+	t, _ := time.ParseDuration(fmt.Sprintf("%d%s", roundedSec, "s"))
+
+	return formatDuration(t)
+}
+
+func getChangeColor(now, prior int) string {
+	baseClass := "w-14 h-10 border-b-4 flex items-center justify-center text-white"
+	// green +
+	// red -
+	// zinc no change
+	if now > prior {
+		return fmt.Sprintf("%s %s", baseClass, "border-emerald-500")
+	}
+
+	if now < prior {
+		return fmt.Sprintf("%s %s", baseClass, "border-red-500")
+	}
+
+	return fmt.Sprintf("%s %s", baseClass, "border-zinc-500")
+}
+
+templ Metrics(sessionStats database.GetSessionStatsRow, urlStats database.GetPageViewCountRow) {
+	<!-- Card 1 -->
+	<article class="shadow-lg rounded-2xl bg-zinc-800 p-4">
+		<h3 class="font-bold text-white text-lg leading-6">Total Visitors</h3>
+		<div class="flex items-center justify-between mt-2">
+			<span class="font-bold text-2xl text-white">{ fmt.Sprintf("%d", sessionStats.TotalVisits) }</span>
+			<figure class={ getChangeColor(int(sessionStats.TotalVisits), int(sessionStats.TotalVisitsPrior)) }>
+				<span class="font-bold">{ getDiffPercent(int(sessionStats.TotalVisits), int(sessionStats.TotalVisitsPrior)) }</span>
+			</figure>
+		</div>
+	</article>
+	<!-- Card 2 -->
+	<article class="shadow-lg rounded-2xl bg-zinc-800 p-4">
+		<h3 class="font-bold text-white text-lg leading-6">Unique Visitors</h3>
+		<div class="flex items-center justify-between mt-2">
+			<span class="font-bold text-2xl text-white">{ fmt.Sprintf("%d", sessionStats.UniqueVisits) }</span>
+			<figure class={ getChangeColor(int(sessionStats.UniqueVisits), int(sessionStats.UniqueVisitsPrior)) }>
+				<span class="font-bold">{ getDiffPercent(int(sessionStats.UniqueVisits), int(sessionStats.UniqueVisitsPrior)) }</span>
+			</figure>
+		</div>
+	</article>
+	<!-- Card 3 -->
+	<article class="shadow-lg rounded-2xl bg-zinc-800 p-4">
+		<h3 class="font-bold text-white text-lg leading-6">Total Pageviews</h3>
+		<div class="flex items-center justify-between mt-2">
+			<span class="font-bold text-2xl text-white">{ fmt.Sprintf("%d", urlStats.TotalPageViews) }</span>
+			<figure class={ getChangeColor(int(urlStats.TotalPageViews), int(urlStats.TotalPageViewsPrior)) }>
+				<span class="font-bold">{ getDiffPercent(int(urlStats.TotalPageViews), int(urlStats.TotalPageViewsPrior)) }</span>
+			</figure>
+		</div>
+	</article>
+	<!-- Card 4 -->
+	<article class="shadow-lg rounded-2xl bg-zinc-800 p-4">
+		<h3 class="font-bold text-white text-lg leading-6">Average Visit Duration</h3>
+		<div class="flex items-center justify-between mt-2">
+			<span class="font-bold text-2xl text-white">{ getDuration(sessionStats.AverageDuration) }</span>
+			<figure class={ getChangeColor(int(sessionStats.AverageDuration), int(sessionStats.AverageDurationPrior)) }>
+				<span class="font-bold">{ getDiffPercent(int(sessionStats.AverageDuration), int(sessionStats.AverageDurationPrior)) }</span>
+			</figure>
+		</div>
+	</article>
+}

@@ -11,7 +11,7 @@
     "build-script": "babel js --out-dir dist/ && terser dist/index.js --compress --mangle --output public/js/script.js",
     "build-server": "go build -o server",
     "build-templ": "templ generate",
-    "build-style": "npx tailwindcss -o ./public/css/output.css --minify"
+    "build-css": "npx tailwindcss -o ./public/css/output.css --minify"
   },
   "keywords": [],
   "author": "",

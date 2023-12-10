@@ -24,6 +24,8 @@ func registerRoutes(r chi.Router, h *handlers.Handler) {
 
 	// Domain Stats Routes
 	r.Get("/{domain}", h.Authed(h.DomainStatsPage))
+	r.Get("/{domain}/stats/{interval}-{unit}", h.Authed(h.DomainStats))
+	r.Get("/{domain}/graph/{interval}-{unit}", h.Authed(h.GraphStats))
 }
 
 // the following requests are made my the script running on users client
