@@ -25,10 +25,10 @@ Privacy first, open, and simple analytics app
   - Test the tracking to reporting flow.
 
 ### Stage 2: Enhanced Data Collection and Reporting
-- [ ] **Enhance the Tracking Script**
+- [x] **Enhance the Tracking Script**
   - Add data collection for referral source, browser/device info, and page time.
 
-- [ ] **Update Backend and Database**
+- [x] **Update Backend and Database**
   - Adapt the backend for additional data processing.
   - Update the database schema as needed.
 
