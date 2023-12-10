@@ -31,11 +31,11 @@ WHERE domain_id = $1;
 
 -- name: GetGraphStats :many
 WITH date_ranges AS (
-    SELECT generate_series(@interval_start::TIMESTAMP, CURRENT_DATE, make_interval(days := @step)) AS start_date
+    SELECT generate_series(CURRENT_DATE - make_interval(days := @interval_start), CURRENT_DATE, make_interval(days := @step)) AS start_date
 )
 SELECT dr.start_date::TIMESTAMP, COUNT(DISTINCT ds.session_id) AS session_count
 FROM date_ranges dr
 LEFT JOIN domain_sessions ds ON ds.session_start_time >= dr.start_date AND ds.session_start_time < dr.start_date + make_interval(days := @step)
-WHERE (ds.domain_id = $1 OR ds.domain_id IS NULL) AND dr.start_date <= CURRENT_DATE
+WHERE (ds.domain_id = $1 OR ds.domain_id IS NULL) -- return a null row, i.e. with 0 visits on days with no visitors
 GROUP BY dr.start_date
 ORDER BY dr.start_date;

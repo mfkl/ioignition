@@ -90,7 +90,7 @@ func (h *Handler) GraphStats(w http.ResponseWriter, r *http.Request, u database.
 	param := database.GetGraphStatsParams{
 		DomainID:      d.ID,
 		Step:          5,
-		IntervalStart: time.Now().AddDate(0, 0, -interval),
+		IntervalStart: int32(interval),
 	}
 
 	stats, err := h.dbQueries.GetGraphStats(r.Context(), param)

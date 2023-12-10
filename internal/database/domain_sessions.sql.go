@@ -102,12 +102,12 @@ func (q *Queries) GetDomainSession(ctx context.Context, arg GetDomainSessionPara
 
 const getGraphStats = `-- name: GetGraphStats :many
 WITH date_ranges AS (
-    SELECT generate_series($3::TIMESTAMP, CURRENT_DATE, make_interval(days := $2)) AS start_date
+    SELECT generate_series(CURRENT_DATE - make_interval(days := $3), CURRENT_DATE, make_interval(days := $2)) AS start_date
 )
 SELECT dr.start_date::TIMESTAMP, COUNT(DISTINCT ds.session_id) AS session_count
 FROM date_ranges dr
 LEFT JOIN domain_sessions ds ON ds.session_start_time >= dr.start_date AND ds.session_start_time < dr.start_date + make_interval(days := $2)
-WHERE (ds.domain_id = $1 OR ds.domain_id IS NULL) AND dr.start_date <= CURRENT_DATE
+WHERE (ds.domain_id = $1 OR ds.domain_id IS NULL)
 GROUP BY dr.start_date
 ORDER BY dr.start_date
 `
@@ -115,7 +115,7 @@ ORDER BY dr.start_date
 type GetGraphStatsParams struct {
 	DomainID      uuid.UUID
 	Step          int32
-	IntervalStart time.Time
+	IntervalStart int32
 }
 
 type GetGraphStatsRow struct {
