@@ -16,7 +16,7 @@ Privacy first, open, and simple analytics app
   - Develop the backend to receive and store data.
   - Choose and set up a database with a simple schema.
 
-- [ ] **Basic Reporting Interface**
+- [x] **Basic Reporting Interface**
   - Create a basic web interface for displaying total page views and unique visitors.
   - Implement simple charts or tables for data display.
 
