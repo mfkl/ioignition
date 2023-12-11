@@ -40,7 +40,7 @@ Privacy first, open, and simple analytics app
   - Test new features for accuracy and performance.
   - Optimize data processing and reporting.
 
-### Stage 3: Real-Time Analytics Introduction
+### Stage 3: Performance Insights
 - [ ] **Real-Time Data Processing Setup**
   - Set up Apache Kafka for data streaming.
   - Use a framework (Apache Spark, Node.js) for real-time data processing.
