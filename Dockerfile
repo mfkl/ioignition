@@ -1,5 +1,10 @@
 FROM golang:1.21.1-alpine as build_stage
 
+# For these to work you need to do two things on the dokku host:
+# 1. dokku config:set <app-name> KEY=VALUE
+# 2. dokku docker-options:add <app-name> build "--build-arg ARG_NAME=${KEY}
+# Where key is the one you've set in step 1.
+# https://dokku.com/docs/deployment/builders/dockerfiles/?h=dockerfile#build-time-configuration-variables
 ARG DATABASE_URL
 ARG PORT
 ARG JWT_SECRET
