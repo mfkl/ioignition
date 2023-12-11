@@ -40,11 +40,12 @@ RUN npm install
 FROM dependencies AS build
 RUN npm run build-css
 
+# install templ
+RUN npm run build-templ
+
 # build js script
 RUN npm run build-script
 
-# install templ
-RUN npm run build-templ
 
 # Build server
 RUN scripts/buildprod.sh
