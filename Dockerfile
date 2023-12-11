@@ -1,5 +1,9 @@
 FROM golang:1.21.1-alpine as build_stage
 
+ARG DATABASE_URL
+ARG PORT
+ARG JWT_SECRET
+
 # Install curl, bash, node, npm
 RUN apk add --no-cache bash curl nodejs npm
 
@@ -29,6 +33,10 @@ COPY view/*_templ.go ./view/
 # Copy everything inside public
 COPY public ./
 
+ENV DATABASE_URL=${DATABASE_URL}
+ENV PORT=${PORT}
+ENV JWT_SECRET=${JWT_SECRET}
+
 # Build server
 RUN scripts/buildprod.sh
 
@@ -48,7 +56,7 @@ COPY --from=build_stage /temp/view .
 COPY --from=build_stage /temp/public .
 COPY --from=build_stage /temp/server .
 
-EXPOSE 8080
+EXPOSE ${PORT}
 
 # Command to run when starting the container
 CMD ["./server"]
