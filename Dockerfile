@@ -38,9 +38,6 @@ COPY view/*_templ.go ./view/
 # Copy everything inside public
 COPY public ./
 
-ENV DATABASE_URL=${DATABASE_URL}
-ENV PORT=${PORT}
-ENV JWT_SECRET=${JWT_SECRET}
 
 # Build server
 RUN scripts/buildprod.sh
@@ -50,11 +47,9 @@ FROM alpine:latest
 
 WORKDIR /app/
 
-# Copy the pre-built binary file from the previous stage
-COPY --from=build_stage /temp/.env .
-COPY --from=build_stage /temp/view .
-COPY --from=build_stage /temp/public .
-COPY --from=build_stage /temp/server .
+ENV DATABASE_URL=${DATABASE_URL}
+ENV PORT=${PORT}
+ENV JWT_SECRET=${JWT_SECRET}
 
 EXPOSE ${PORT}
 
