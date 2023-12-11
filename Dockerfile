@@ -1,4 +1,18 @@
-FROM golang:1.21.1-alpine as build_stage
+ARG GO_IMAGE=golang:1.21-alpine
+
+# Set the Base Image using the argument set above
+FROM $GO_IMAGE AS base
+RUN apk --no-cache add dumb-init \
+    && addgroup -g 1000 go \
+    && adduser -D -u 1000 -G go go
+# Install curl, bash, node, npm
+RUN apk add --no-cache bash curl nodejs npm
+
+RUN mkdir -p /home/go/app 
+RUN chown go:go /home/go/app
+
+WORKDIR /home/go/app
+USER go
 
 # For these to work you need to do two things on the dokku host:
 # 1. dokku config:set <app-name> KEY=VALUE
@@ -9,49 +23,48 @@ ARG DATABASE_URL
 ARG PORT
 ARG JWT_SECRET
 
-# Install curl, bash, node, npm
-RUN apk add --no-cache bash curl nodejs npm
-
-# Set the working directory inside the container
-WORKDIR /temp
-
-# Copy the source code into the container
-COPY . .
-
-# Download all dependencies
+# Copy the Go mod and sum files (these describe the app's dependencies) and download dependencies
+FROM base AS dependencies
+COPY --chown=go:go go.mod ./
 RUN go mod download
+RUN go install github.com/a-h/templ/cmd/templ@latest
+
+# Copy the entire source code from the current directory to the Working Directory inside the container
+COPY --chown=go:go . .
 
 # Build tailwind css
-COPY package.json ./
-COPY tailwind.config.js ./
+COPY --chown=go:go package.json ./
+COPY --chown=go:go tailwind.config.js ./
 RUN npm install
+
+FROM dependencies AS build
 RUN npm run build-css
 
 # build js script
 RUN npm run build-script
 
 # install templ
-RUN go install github.com/a-h/templ/cmd/templ@latest
 RUN npm run build-templ
-COPY view/*_templ.go ./view/
-
-# Copy everything inside public
-COPY public ./
-
 
 # Build server
 RUN scripts/buildprod.sh
 
-# Final stage: Run the compiled binary
-FROM alpine:latest
+FROM base AS production
 
-WORKDIR /app/
-
+ENV HOST=0.0.0.0
 ENV DATABASE_URL=${DATABASE_URL}
 ENV PORT=${PORT}
 ENV JWT_SECRET=${JWT_SECRET}
 
+COPY --chown=go:go --from=build /home/go/app/main .
+
+RUN mkdir -p public
+RUN mkdir -p view
+
+COPY --chown=go:go --from=build /home/go/app/public ./public/
+COPY --chown=go:go --from=build /home/go/app/view/*_templ.go ./view/
+
 EXPOSE ${PORT}
 
 # Command to run when starting the container
-CMD ["./server"]
+CMD ["./main"]
