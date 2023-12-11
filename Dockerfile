@@ -32,6 +32,8 @@ COPY public ./
 # Build server
 RUN scripts/buildprod.sh
 
+# Install migration tool
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 # Run the migrations script
 RUN scripts/migrateup.sh
 
