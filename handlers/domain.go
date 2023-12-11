@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"ioignition/internal/database"
 	"ioignition/utils"
 	"ioignition/view"
@@ -49,7 +48,7 @@ func (h *Handler) AddDomain(w http.ResponseWriter, r *http.Request, user databas
 	}
 
 	// strip 'www.'
-	body.Domain = strings.Trim(body.Domain, "www.")
+	body.Domain = strings.TrimPrefix(body.Domain, "www.")
 
 	// url.Parse does not work as expected without scheme
 	if !strings.Contains(body.Domain, "://") {
@@ -64,7 +63,7 @@ func (h *Handler) AddDomain(w http.ResponseWriter, r *http.Request, user databas
 
 	param := database.CreateDomainParams{
 		ID:        uuid.New(),
-		Url:       fmt.Sprintf("%s", domain.Host),
+		Url:       domain.Host,
 		UserID:    user.ID,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -94,5 +93,8 @@ func (h *Handler) ListDomains(w http.ResponseWriter, r *http.Request, user datab
 		return
 	}
 
-	view.ListDomains(domains).Render(r.Context(), w)
+	err = view.ListDomains(domains).Render(r.Context(), w)
+	if err != nil {
+		log.Print("Error rendering view.ListDomains:", err)
+	}
 }

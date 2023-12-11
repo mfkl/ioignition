@@ -66,7 +66,7 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: refactor, duplicated from domains.go
 	// strip 'www.'
-	body.Domain = strings.Trim(body.Domain, "www.")
+	body.Domain = strings.TrimPrefix(body.Domain, "www.")
 
 	// url.Parse does not work as expected without scheme
 	if !strings.Contains(body.Domain, "://") {

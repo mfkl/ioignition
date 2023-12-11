@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-var InternalServerError = errors.New("internal server error")
+var ErrorInternalServer = errors.New("internal server error")
 
 type errRes struct {
 	Error string `json:"error,omitempty"`
 }
 
 func RespondWithInternalServerError(w http.ResponseWriter) {
-	RespondWithError(w, http.StatusInternalServerError, InternalServerError)
+	RespondWithError(w, http.StatusInternalServerError, ErrorInternalServer)
 }
 
 func RespondWithError(w http.ResponseWriter, status int, err error) {
@@ -33,7 +33,10 @@ func RespondWithJson(w http.ResponseWriter, status int, payload interface{}) {
 
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(status)
-	w.Write(res)
+	_, err = w.Write(res)
+	if err != nil {
+		log.Print("Error writing response:", err)
+	}
 }
 
 func GetAuthHeader(r *http.Request) (string, error) {

@@ -57,7 +57,10 @@ func (h *Handler) DomainStats(w http.ResponseWriter, r *http.Request, u database
 		return
 	}
 
-	view.Metrics(stats, urlStats).Render(r.Context(), w)
+	err = view.Metrics(stats, urlStats).Render(r.Context(), w)
+	if err != nil {
+		log.Print("Error rendering view.Metrics:", err)
+	}
 }
 
 func (h *Handler) GraphStats(w http.ResponseWriter, r *http.Request, u database.User) {
@@ -79,7 +82,10 @@ func (h *Handler) GraphStats(w http.ResponseWriter, r *http.Request, u database.
 		unit = "D"
 	}
 
-	interval, err := strconv.Atoi(intervalString)
+	const baseten = 10
+	const thirtytwoBits = 32
+
+	interval, err := strconv.ParseInt(intervalString, baseten, thirtytwoBits)
 	if err != nil {
 		interval = 30
 		unit = "D"
@@ -108,7 +114,10 @@ func (h *Handler) GraphStats(w http.ResponseWriter, r *http.Request, u database.
 		dataPoints = append(dataPoints, int(s.SessionCount))
 	}
 
-	view.Graph(labels, dataPoints, "Visitors").Render(r.Context(), w)
+	err = view.Graph(labels, dataPoints, "Visitors").Render(r.Context(), w)
+	if err != nil {
+		log.Print("Error rendering view.Graph:", err)
+	}
 }
 
 func formattedTime(t time.Time) string {

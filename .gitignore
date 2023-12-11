@@ -21,9 +21,6 @@ go.work
 node_modules/
 dist/
 
-# templ
-view/*_templ.go
-
 # air tmp files
 /tmp
 

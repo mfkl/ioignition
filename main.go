@@ -72,8 +72,11 @@ func main() {
 
 	// Server -------------------------
 	server := http.Server{
-		Addr:    ":" + Port,
-		Handler: r,
+		Addr:              ":" + Port,
+		Handler:           r,
+		ReadHeaderTimeout: time.Second * 10,
+		WriteTimeout:      time.Second * 20,
+		IdleTimeout:       time.Minute * 2,
 	}
 
 	fmt.Printf("Server listing on port: %s\n", Port)
