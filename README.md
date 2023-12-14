@@ -30,7 +30,7 @@ Privacy first, open, and simple analytics app
 
 - [x] **Update Backend and Database**
   - Adapt the backend for additional data processing.
-  - Update the database schema as needed.
+  - Update the database schema as needed
 
 - [ ] **Improved Reporting Interface**
   - Add new metrics (bounce rate, session duration, demographics) to the interface.
