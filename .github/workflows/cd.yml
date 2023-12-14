@@ -34,6 +34,7 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $DOKKU_HOST >> ~/.ssh/known_hosts
+          touch test
           scp test server@206.189.92.56:/home/server/ioignition/
 
       - name: Set up Docker Buildx
