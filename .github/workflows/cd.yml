@@ -9,7 +9,7 @@ env:
   DOKKU_HOST: ${{ secrets.HOST_IP }}
   DOKKU_USER: server
   DOKKU_APP: ioignition
-  DOCKER_IMAGE: $DOKKU_APP:${{ github.sha }}
+  DOCKER_IMAGE: ioignition:${{ github.sha }}
   DOKKU_DESTINATION_FOLDER: /home/server/ioignition
 
 jobs:
