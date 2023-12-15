@@ -23,6 +23,3 @@ dist/
 
 # air tmp files
 /tmp
-
-# tailwind
-public/css/output.css

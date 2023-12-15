@@ -1,6 +1,5 @@
 name: "cd"
 
-# yamllint disable-line rule:truthy
 on:
   push:
     branches:
@@ -12,12 +11,14 @@ env:
   DOCKER_IMAGE: ioignition:${{ github.sha }}
   DOKKU_DESTINATION_FOLDER: /home/$${{ secrets.HOST_USER }}/${{ secrets.APP_NAME }}
   DOKKU_APP_NAME: ${{ secrets.APP_NAME }}
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x]
 
     steps:
       - name: Set up Go
@@ -25,8 +26,25 @@ jobs:
         with:
           go-version: "1.21"
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build CSS
+        run: npm run build-css
+
+      - name: Build Script
+        run: npm run build-script
+
+      - name: Build server
+        run: scripts/buildprod.sh
 
       - name: Setup ssh
         run: |
@@ -34,8 +52,6 @@ jobs:
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $DOKKU_HOST >> ~/.ssh/known_hosts
-          touch test
-          scp test server@206.189.92.56:/home/server/ioignition/
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -43,13 +59,17 @@ jobs:
       - name: Build Docker image
         run: |
           docker buildx create --use
-          docker buildx build -t $DOCKER_IMAGE . --load
+          docker buildx build -t $DOCKER_IMAGE \
+            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
+            . --load
           docker save -o $DOCKER_IMAGE.tar $DOCKER_IMAGE
-          scp ./$DOCKER_IMAGE.tar $DOKKU_USER@$DOKKU_HOST:$DOKKU_DESTINATION_FOLDER/
+          scp ./$DOCKER_IMAGE.tar server@206.189.92.56:/home/server/ioignition/
 
       - name: Install goose
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
 
+      # this script requires the env to be set in repo => settings/enviornments/secrets
       - name: Run Migrations
         run: ./scripts/migrateup.sh
 
