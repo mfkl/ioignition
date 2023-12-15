@@ -7,7 +7,7 @@ on:
 
 env:
   DOKKU_HOST: ${{ secrets.HOST_IP }}
-  DOKKU_USER: $${{ secrets.DOKKU_USER }}
+  DOKKU_USER: server
   DOCKER_IMAGE: ioignition:${{ github.sha }}
   DOKKU_DESTINATION_FOLDER: /home/$${{ secrets.HOST_USER }}/${{ secrets.APP_NAME }}
   DOKKU_APP_NAME: ${{ secrets.APP_NAME }}
@@ -64,7 +64,7 @@ jobs:
             --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
             . --load
           docker save -o $DOCKER_IMAGE.tar $DOCKER_IMAGE
-          scp ./$DOCKER_IMAGE.tar $DOKKU_USER@206.189.92.56:/home/$DOKKU_USER/ioignition/
+          scp ./$DOCKER_IMAGE.tar $DOKKU_USER@$DOKKU_HOST:/home/$DOKKU_USER/ioignition/
 
       - name: Install goose
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
