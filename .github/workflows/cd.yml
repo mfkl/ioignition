@@ -8,9 +8,9 @@ on:
 env:
   DOKKU_HOST: ${{ secrets.HOST_IP }}
   DOKKU_USER: server
-  DOCKER_IMAGE: ioignition:${{ github.sha }}
-  DOKKU_APP_NAME: ioignition
-  DOKKU_DESTINATION_FOLDER: /home/$DOKKU_USER/$DOKKU_APP_NAME
+  DOKKU_APP: ioignition
+  DOCKER_IMAGE: $DOKKU_APP:${{ github.sha }}
+  DOKKU_DESTINATION_FOLDER: /home/server/ioignition
 
 jobs:
   build:
@@ -76,4 +76,4 @@ jobs:
       #          DATABASE_URL: ${{ secrets.DATABASE_URL}}
 
       - name: Deploy to Dokku
-        run: ssh $DOKKU_USER@$DOKKU_HOST "docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP_NAME $DOCKER_IMAGE"
+        run: ssh $DOKKU_USER@$DOKKU_HOST "docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP $DOCKER_IMAGE"
