@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM alpine:3.14
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
