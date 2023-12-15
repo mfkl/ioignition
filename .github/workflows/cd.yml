@@ -7,7 +7,7 @@ on:
 
 env:
   DOKKU_HOST: ${{ secrets.HOST_IP }}
-  DOKKU_USER: $${{ secrets.HOST_USER }}
+  DOKKU_USER: $${{ secrets.DOKKU_USER }}
   DOCKER_IMAGE: ioignition:${{ github.sha }}
   DOKKU_DESTINATION_FOLDER: /home/$${{ secrets.HOST_USER }}/${{ secrets.APP_NAME }}
   DOKKU_APP_NAME: ${{ secrets.APP_NAME }}
@@ -64,7 +64,7 @@ jobs:
             --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
             . --load
           docker save -o $DOCKER_IMAGE.tar $DOCKER_IMAGE
-          scp ./$DOCKER_IMAGE.tar server@206.189.92.56:/home/server/ioignition/
+          scp ./$DOCKER_IMAGE.tar $DOKKU_USER@206.189.92.56:/home/$DOKKU_USER/ioignition/
 
       - name: Install goose
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
@@ -72,6 +72,8 @@ jobs:
       # this script requires the env to be set in repo => settings/enviornments/secrets
       - name: Run Migrations
         run: ./scripts/migrateup.sh
+        env: 
+          DATABASE_URL: ${{ secrets.DATABASE_URL}}
 
       - name: Deploy to Dokku
         run: ssh $DOKKU_USER@$DOKKU_HOST "docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP_NAME $DOCKER_IMAGE"
