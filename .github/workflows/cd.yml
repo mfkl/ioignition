@@ -92,4 +92,3 @@ jobs:
         run: ./scripts/migrateup.sh
         env: 
           DB_URL: ${{ secrets.DB_URL}}
-          PGSSLROOTCERT: postgres-ca-cert.crt
