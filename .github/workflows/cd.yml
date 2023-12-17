@@ -85,9 +85,6 @@ jobs:
       - name: Install goose
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
 
-      - name: Prepare database cert
-        run: echo "${{ secrets.POSTGRES_CA_CERT }}" > postgres-ca-cert.crt
-
       - name: Run Migrations
         run: ./scripts/migrateup.sh
         env: 
