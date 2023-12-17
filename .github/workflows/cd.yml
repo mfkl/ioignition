@@ -60,7 +60,7 @@ jobs:
         run: |
           docker buildx create --use
           docker buildx build -t $DOCKER_IMAGE \
-            --build-arg DATABASE_URL=${{ secrets.DATABASE_URL }} \
+            --build-arg DB_URL=${{ secrets.DB_URL }} \
             --build-arg JWT_SECRET=${{ secrets.JWT_SECRET }} \
             . --load
           docker save -o $DOCKER_IMAGE.tar $DOCKER_IMAGE
@@ -85,7 +85,11 @@ jobs:
       - name: Check goose intallation
         run: goose -version
 
+      - name: Create CA Certificate File
+        run: echo "${{ secrets.POSTGRES_CA_CERT }}" > postgres-ca-cert.crt
+
       - name: Run Migrations
         run: ./scripts/migrateup.sh
         env: 
-          DATABASE_URL: ${{ secrets.DATABASE_URL}}
+          DB_URL: ${{ secrets.DB_URL}}
+          PGSSLROOTCERT: postgres-ca-cert.crt
