@@ -16,13 +16,18 @@ import (
 	m "github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httprate"
+	"github.com/ipinfo/go/v2/ipinfo"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 )
 
 const Port = "8080"
 
-var db *sql.DB
+var (
+	db     *sql.DB
+	client *redis.Client
+)
 
 // initialize env and open database
 func init() {
@@ -37,6 +42,15 @@ func init() {
 	if err != nil {
 		log.Fatal("Failed to open db: ", err)
 	}
+
+	// Redis Setup
+	redisUrl := os.Getenv("REDIS_URL")
+	opt, err := redis.ParseURL(redisUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client = redis.NewClient(opt)
 }
 
 // set handlers, routers and serve routes
@@ -44,8 +58,14 @@ func main() {
 	defer db.Close()
 
 	jwtSecret := os.Getenv("JWT_SECRET")
+
+	// ipinfo registration
+	ipinfoToken := os.Getenv("IPINFO_TOKEN")
+	ipClient := ipinfo.NewClient(nil, nil, ipinfoToken)
+
 	dbQueries := database.New(db)
-	h := handlers.NewHandler(db, dbQueries, jwtSecret)
+
+	h := handlers.NewHandler(dbQueries, client, ipClient, jwtSecret)
 
 	r := chi.NewRouter()
 

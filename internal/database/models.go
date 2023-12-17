@@ -11,6 +11,18 @@ import (
 	"github.com/google/uuid"
 )
 
+type Country struct {
+	ID          uuid.UUID
+	Emoji       string
+	CountryCode string
+	Name        string
+	Region      string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	SessionID   string
+	DomainID    uuid.UUID
+}
+
 type Domain struct {
 	ID        uuid.UUID
 	CreatedAt time.Time

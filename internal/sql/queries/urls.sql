@@ -13,3 +13,11 @@ SELECT
 FROM urls u LEFT JOIN domain_sessions s
 ON u.domain_session_id = s.id
 WHERE s.domain_id = $1;
+
+-- name: GetPageViews :many
+SELECT u.url, COUNT(u.url) AS url_count
+FROM urls u LEFT JOIN domain_sessions s
+ON u.domain_session_id = s.id
+WHERE s.domain_id = $1 AND u.created_at >= $2
+GROUP BY u.url
+ORDER BY url_count DESC;

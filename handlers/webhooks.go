@@ -91,6 +91,10 @@ func (h *Handler) StatEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ip := r.Header.Get("X-FORWARDED-FOR")
+	// call get location, can be concurrent as info not needed immediately
+	go h.GetLocation(ip, body.SessionId, domain.ID)
+
 	// there is no session end time as the StatEvent api only registers the
 	// start of a session
 	sessionParam := database.CreateDomainSessionParams{

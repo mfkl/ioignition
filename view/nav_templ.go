@@ -23,7 +23,7 @@ func Nav(email string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav class=\"bg-zinc-800\"><div class=\"max-w-6xl mx-auto px-4\"><div class=\"flex justify-between\"><div class=\"flex space-x-4\"><!--")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<nav class=\"bg-zinc-800\"><div class=\"container mx-auto px-4\"><div class=\"flex justify-between\"><div class=\"flex space-x-4\"><!--")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -133,9 +133,10 @@ func Nav(email string) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Var12 := `
-    // JavaScript for mobile menu toggle
     document.querySelector('.mobile-menu-button').addEventListener('click', function () {
-        // Toggle mobile menu visibility
+      var menu = document.querySelector('.mobile-menu');
+      // Toggle the '.menu-visible' class on the mobile menu
+      menu.classList.toggle('menu-visible');
     });
   `
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)

@@ -1,0 +1,57 @@
+package view
+
+import "math"
+import "fmt"
+
+type Stat struct {
+	Value    string
+	Count    int
+	Percent  int
+	Img      string
+	HasImage bool
+}
+
+func getClass(w int) string {
+	baseClass := "bg-zinc-700 rounded h-8"
+
+	wf := float64(w) / 10
+	width := int(math.Round(wf)) * 10
+
+	return fmt.Sprintf("%s wi-%d", baseClass, width)
+}
+
+templ BarGraph(stat Stat) {
+	<div class="relative">
+		<div class="w-full bg-zinc-900 rounded overflow-hidden">
+			<div class={ getClass(stat.Percent) }></div>
+			<div class="absolute top-0 left-0 flex items-center justify-between w-full h-full px-2">
+				<div class="flex space-x-2 items-center w-full">
+					if stat.HasImage {
+						<object data={ stat.Img } type="image/png">
+							<img src="/assets/favicon-fallback.svg" alt="Website Favicon" class="w-4 h-4"/>
+						</object>
+					}
+					<span>{ stat.Value }</span>
+				</div>
+				<span>{ fmt.Sprintf("%d", stat.Count) }</span>
+			</div>
+		</div>
+	</div>
+}
+
+templ Stats(title string, stats []Stat ) {
+	<div class="bg-zinc-800 flex-1 rounded-2xl space-y-4 p-2">
+		<header class="border-b border-zinc-600">
+			<h2 class="font-semibold text-xl pb-2">{ title }</h2>
+		</header>
+		<!-- Body Section -->
+		<section>
+			<!-- Your body content goes here -->
+			<article class="overflow-y-auto space-y-2">
+				for _, s := range stats {
+					@BarGraph(s)
+				}
+			</article>
+		</section>
+	</div>
+}

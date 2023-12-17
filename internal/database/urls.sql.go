@@ -77,3 +77,45 @@ func (q *Queries) GetPageViewCount(ctx context.Context, arg GetPageViewCountPara
 	err := row.Scan(&i.TotalPageViews, &i.TotalPageViewsPrior)
 	return i, err
 }
+
+const getPageViews = `-- name: GetPageViews :many
+SELECT u.url, COUNT(u.url) AS url_count
+FROM urls u LEFT JOIN domain_sessions s
+ON u.domain_session_id = s.id
+WHERE s.domain_id = $1 AND u.created_at >= $2
+GROUP BY u.url
+ORDER BY url_count DESC
+`
+
+type GetPageViewsParams struct {
+	DomainID  uuid.UUID
+	CreatedAt time.Time
+}
+
+type GetPageViewsRow struct {
+	Url      string
+	UrlCount int64
+}
+
+func (q *Queries) GetPageViews(ctx context.Context, arg GetPageViewsParams) ([]GetPageViewsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPageViews, arg.DomainID, arg.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPageViewsRow
+	for rows.Next() {
+		var i GetPageViewsRow
+		if err := rows.Scan(&i.Url, &i.UrlCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

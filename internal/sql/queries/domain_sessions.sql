@@ -39,3 +39,30 @@ LEFT JOIN domain_sessions ds ON ds.session_start_time >= dr.start_date AND ds.se
 WHERE (ds.domain_id = $1 OR ds.domain_id IS NULL) -- return a null row, i.e. with 0 visits on days with no visitors
 GROUP BY dr.start_date
 ORDER BY dr.start_date;
+
+-- name: GetRefererStats :many
+SELECT referer, COUNT(referer) AS referer_count 
+FROM domain_sessions
+WHERE domain_id = $1 AND created_at > $2
+GROUP BY referer
+ORDER BY referer_count DESC;
+
+-- name: GetPlatformStats :many
+SELECT platform, COUNT(platform) AS platform_count 
+FROM domain_sessions
+WHERE domain_id = $1 AND created_at > $2
+GROUP BY platform
+ORDER BY platform_count DESC;
+
+-- name: GetBrowserStats :many
+SELECT browser, COUNT(browser) AS browser_count 
+FROM domain_sessions
+WHERE domain_id = $1 AND created_at > $2
+GROUP BY browser
+ORDER BY browser_count DESC;
+
+-- name: GetCurrentlyActiveUsers :one
+SELECT session_id, COUNT(DISTINCT session_id)
+FROM domain_sessions
+WHERE domain_id = $1 AND session_start_time > $2 AND session_end_time IS NULL
+GROUP BY session_id;

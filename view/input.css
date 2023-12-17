@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Width Classes */
+.wi-0 { width: 0%; }
+.wi-10 { width: 10%; }
+.wi-20 { width: 20%; }
+.wi-30 { width: 30%; }
+.wi-40 { width: 40%; }
+.wi-50 { width: 50%; }
+.wi-60 { width: 60%; }
+.wi-70 { width: 70%; }
+.wi-80 { width: 80%; }
+.wi-90 { width: 90%; }
+.wi-100 { width: 100%; }

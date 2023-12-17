@@ -24,8 +24,15 @@ func registerRoutes(r chi.Router, h *handlers.Handler) {
 
 	// Domain Stats Routes
 	r.Get("/{domain}", h.Authed(h.DomainStatsPage))
-	r.Get("/{domain}/stats/{interval}-{unit}", h.Authed(h.DomainStats))
-	r.Get("/{domain}/graph/{interval}-{unit}", h.Authed(h.GraphStats))
+	r.Get("/{domainId}/stats/{interval}-{unit}", h.Authed(h.DomainStats))
+	r.Get("/{domainId}/graph/{interval}-{unit}", h.Authed(h.GraphStats))
+	r.Get("/{domainId}/online", h.Authed(h.GetOnlineCount))
+
+	r.Get("/{domainId}/urlvisits/{interval}-{unit}", h.Authed(h.UrlVisits))
+	r.Get("/{domainId}/referers/{interval}-{unit}", h.Authed(h.RefererCount))
+	r.Get("/{domainId}/platforms/{interval}-{unit}", h.Authed(h.PlatformCount))
+	r.Get("/{domainId}/browsers/{interval}-{unit}", h.Authed(h.BrowserCount))
+	r.Get("/{domainId}/locations/{interval}-{unit}", h.Authed(h.LocationCount))
 }
 
 // the following requests are made my the script running on users client

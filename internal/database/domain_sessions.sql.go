@@ -70,6 +70,71 @@ func (q *Queries) CreateDomainSession(ctx context.Context, arg CreateDomainSessi
 	return i, err
 }
 
+const getBrowserStats = `-- name: GetBrowserStats :many
+SELECT browser, COUNT(browser) AS browser_count 
+FROM domain_sessions
+WHERE domain_id = $1 AND created_at > $2
+GROUP BY browser
+ORDER BY browser_count DESC
+`
+
+type GetBrowserStatsParams struct {
+	DomainID  uuid.UUID
+	CreatedAt time.Time
+}
+
+type GetBrowserStatsRow struct {
+	Browser      sql.NullString
+	BrowserCount int64
+}
+
+func (q *Queries) GetBrowserStats(ctx context.Context, arg GetBrowserStatsParams) ([]GetBrowserStatsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getBrowserStats, arg.DomainID, arg.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetBrowserStatsRow
+	for rows.Next() {
+		var i GetBrowserStatsRow
+		if err := rows.Scan(&i.Browser, &i.BrowserCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getCurrentlyActiveUsers = `-- name: GetCurrentlyActiveUsers :one
+SELECT session_id, COUNT(DISTINCT session_id)
+FROM domain_sessions
+WHERE domain_id = $1 AND session_start_time > $2 AND session_end_time IS NULL
+GROUP BY session_id
+`
+
+type GetCurrentlyActiveUsersParams struct {
+	DomainID         uuid.UUID
+	SessionStartTime time.Time
+}
+
+type GetCurrentlyActiveUsersRow struct {
+	SessionID string
+	Count     int64
+}
+
+func (q *Queries) GetCurrentlyActiveUsers(ctx context.Context, arg GetCurrentlyActiveUsersParams) (GetCurrentlyActiveUsersRow, error) {
+	row := q.db.QueryRowContext(ctx, getCurrentlyActiveUsers, arg.DomainID, arg.SessionStartTime)
+	var i GetCurrentlyActiveUsersRow
+	err := row.Scan(&i.SessionID, &i.Count)
+	return i, err
+}
+
 const getDomainSession = `-- name: GetDomainSession :one
 SELECT id, client_id, session_id, session_start_time, session_end_time, referer, device_width, browser, platform, created_at, updated_at, domain_id FROM domain_sessions
 WHERE client_id = $1 AND session_id = $2
@@ -107,7 +172,7 @@ WITH date_ranges AS (
 SELECT dr.start_date::TIMESTAMP, COUNT(DISTINCT ds.session_id) AS session_count
 FROM date_ranges dr
 LEFT JOIN domain_sessions ds ON ds.session_start_time >= dr.start_date AND ds.session_start_time < dr.start_date + make_interval(days := $2)
-WHERE (ds.domain_id = $1 OR ds.domain_id IS NULL)
+WHERE (ds.domain_id = $1 OR ds.domain_id IS NULL) -- return a null row, i.e. with 0 visits on days with no visitors
 GROUP BY dr.start_date
 ORDER BY dr.start_date
 `
@@ -133,6 +198,88 @@ func (q *Queries) GetGraphStats(ctx context.Context, arg GetGraphStatsParams) ([
 	for rows.Next() {
 		var i GetGraphStatsRow
 		if err := rows.Scan(&i.DrStartDate, &i.SessionCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPlatformStats = `-- name: GetPlatformStats :many
+SELECT platform, COUNT(platform) AS platform_count 
+FROM domain_sessions
+WHERE domain_id = $1 AND created_at > $2
+GROUP BY platform
+ORDER BY platform_count DESC
+`
+
+type GetPlatformStatsParams struct {
+	DomainID  uuid.UUID
+	CreatedAt time.Time
+}
+
+type GetPlatformStatsRow struct {
+	Platform      sql.NullString
+	PlatformCount int64
+}
+
+func (q *Queries) GetPlatformStats(ctx context.Context, arg GetPlatformStatsParams) ([]GetPlatformStatsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getPlatformStats, arg.DomainID, arg.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPlatformStatsRow
+	for rows.Next() {
+		var i GetPlatformStatsRow
+		if err := rows.Scan(&i.Platform, &i.PlatformCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getRefererStats = `-- name: GetRefererStats :many
+SELECT referer, COUNT(referer) AS referer_count 
+FROM domain_sessions
+WHERE domain_id = $1 AND created_at > $2
+GROUP BY referer
+ORDER BY referer_count DESC
+`
+
+type GetRefererStatsParams struct {
+	DomainID  uuid.UUID
+	CreatedAt time.Time
+}
+
+type GetRefererStatsRow struct {
+	Referer      sql.NullString
+	RefererCount int64
+}
+
+func (q *Queries) GetRefererStats(ctx context.Context, arg GetRefererStatsParams) ([]GetRefererStatsRow, error) {
+	rows, err := q.db.QueryContext(ctx, getRefererStats, arg.DomainID, arg.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetRefererStatsRow
+	for rows.Next() {
+		var i GetRefererStatsRow
+		if err := rows.Scan(&i.Referer, &i.RefererCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

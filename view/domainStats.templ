@@ -1,25 +1,48 @@
 package view
 
-templ DomainStats(email string, domain string) {
+import "fmt"
+
+templ DomainStats(email string, domain string, domainId string) {
 	@Nav(email)
 	<main class="container mx-auto px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-20">
-		@VisitorStat(domain)
+		@VisitorStat(domain, domainId)
 	</main>
 }
 
-templ VisitorStat(domain string) {
+templ VisitorStat(domain string, id string) {
 	<section class="px-4 py-5 sm:p-6 space-y-8">
 		<!-- Domain Header -->
-		<header class="flex items-center space-x-8">
+		<header class="flex items-center space-x-4">
 			<h2 class="text-xl font-bold text-white">{ domain }</h2>
-			<span class="flex items-center">
-				<span class="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-2"></span>
-				<span class="text-white">22 Active visitors</span>
-			</span>
+			<div class="border-r-2 border-zinc-600 h-6"></div>
+			<span hx-get={ id + "/online" } hx-trigger="load" class="flex items-center"></span>
 		</header>
-		<!-- Large Graph Container -->
-		<article hx-get={ domain + "/graph/30-D" } hx-trigger="load"></article>
 		<!-- Cards Container -->
-		<section hx-get={ domain + "/stats/30-D" } hx-trigger="revealed" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></section>
+		<section hx-get={ id + "/stats/30-D" } hx-trigger="revealed" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></section>
+		<!-- Large Graph Container -->
+		<article hx-get={ id + "/graph/30-D" } hx-trigger="load"></article>
+		<!-- Page & Url views -->
+		<section class="space-y-8 flex flex-col h-screen">
+			<article class="flex flex-col md:flex-row gap-4 md:gap-8 items-stretch h-1/2">
+				<div hx-get={ id + "/urlvisits/30-D" } hx-trigger="revealed" class="bg-zinc-800 flex-1 rounded-2xl p-4"></div>
+				<div hx-get={ id + "/referers/30-D" } hx-trigger="revealed" class="bg-zinc-800 flex-1 rounded-2xl p-4"></div>
+			</article>
+			<!-- country, os, and browser -->
+			<article class="flex flex-col md:flex-row gap-4 md:gap-8 items-stretch h-1/2">
+				<div hx-get={ id + "/locations/30-D" } hx-trigger="revealed" class="bg-zinc-800 flex-1 rounded-2xl p-4"></div>
+				<div hx-get={ id + "/platforms/30-D" } hx-trigger="revealed" class="bg-zinc-800 flex-1 rounded-2xl p-4"></div>
+				<div hx-get={ id + "/browsers/30-D" } hx-trigger="revealed" class="bg-zinc-800 flex-1 rounded-2xl p-4"></div>
+			</article>
+		</section>
 	</section>
+}
+
+templ CurrentlyOnline(count int) {
+	if count > 0 {
+		<span class="inline-block w-3 h-3 rounded-full bg-emerald-500 mr-2"></span>
+		<span class="text-white">{ fmt.Sprintf("%d online", count) }</span>
+	} else {
+		<span class="inline-block w-3 h-3 rounded-full bg-zinc-500 mr-2"></span>
+		<span class="text-zinc-700">0 online</span>
+	}
 }

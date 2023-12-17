@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"ioignition/internal/database"
+	"ioignition/utils"
 	"ioignition/view"
 	"log"
 	"net/http"
@@ -34,8 +35,15 @@ func (h *Handler) LandingPage(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) DomainStatsPage(w http.ResponseWriter, r *http.Request, u database.User) {
 	domain := chi.URLParam(r, "domain")
 
+	d, err := h.dbQueries.GetDomain(r.Context(), domain)
+	if err != nil {
+		log.Printf("Error getting domain info: %+v", err)
+		utils.RespondWithInternalServerError(w)
+		return
+	}
+
 	if isHtmxRequest(r) {
-		err := view.DomainStats(u.Email, domain).Render(r.Context(), w)
+		err := view.DomainStats(u.Email, domain, d.ID.String()).Render(r.Context(), w)
 		if err != nil {
 			log.Print("Error rendering view.DomainStats:", err)
 		}
@@ -43,7 +51,7 @@ func (h *Handler) DomainStatsPage(w http.ResponseWriter, r *http.Request, u data
 		return
 	}
 
-	err := view.Layout(view.DomainStats(u.Email, domain)).Render(r.Context(), w)
+	err = view.Layout(view.DomainStats(u.Email, domain, d.ID.String())).Render(r.Context(), w)
 	if err != nil {
 		log.Print("Error rendering DomainStatsPage:", err)
 	}
