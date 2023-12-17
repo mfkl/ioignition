@@ -76,4 +76,4 @@ jobs:
       #          DATABASE_URL: ${{ secrets.DATABASE_URL}}
 
       - name: Deploy to Dokku
-        run: ssh $DOKKU_USER@$DOKKU_HOST "docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && dokku git:from-image $DOKKU_APP $DOCKER_IMAGE"
+        run: ssh $DOKKU_USER@$DOKKU_HOST "sudo docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP $DOCKER_IMAGE"
