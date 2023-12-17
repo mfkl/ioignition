@@ -84,7 +84,7 @@ jobs:
           fetch-dept: 0
 
       - name: Check goose intallation
-        run: goose -v
+        run: goose -version
 
       - name: Run Migrations
         run: ./scripts/migrateup.sh
