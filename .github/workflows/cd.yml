@@ -66,6 +66,23 @@ jobs:
           docker save -o $DOCKER_IMAGE.tar $DOCKER_IMAGE
           scp ./$DOCKER_IMAGE.tar $DOKKU_USER@$DOKKU_HOST:/home/$DOKKU_USER/ioignition/
 
+      - name: Deploy to Dokku
+        run: ssh $DOKKU_USER@$DOKKU_HOST "sudo docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP $DOCKER_IMAGE"
+
+  migrate:
+    runs-on: [self-hosted, server-vps]
+
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with: 
+          fetch-dept: 0
+
       - name: Install goose
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
 
@@ -73,6 +90,3 @@ jobs:
         run: ./scripts/migrateup.sh
         env: 
           DATABASE_URL: ${{ secrets.DATABASE_URL}}
-
-      - name: Deploy to Dokku
-        run: ssh $DOKKU_USER@$DOKKU_HOST "sudo docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP $DOCKER_IMAGE"
