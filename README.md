@@ -5,73 +5,22 @@
 # ioignition
 Privacy first, open, and simple analytics app
 
-## TODO
+## Add secrets
+Copy `env.example` into `.env` and add secrets required to run the app
 
-### Stage 1: Basic Web Analytics
-- [x] **Develop a Tracking Script**
-  - Create a JavaScript script for basic tracking (session times, unique visitor ID).
-  - Ensure easy embeddability into web pages.
+## Running the app locally
+* Clone the repo
+* Start services: `docker compose -d up`
+* Stop services: `docker compse -d down`
+* If you want to see the logs skip `-d` and run docker compose
+* Not neccessary but recommended:
+  * Build Js Script: `npm run build-script`
+  * Build tailwind: `npm run build-css`
+* To start server: `go run main.go` OR `go build -o main && ./main` -- To run as binary
 
-- [x] **Set Up a Backend to Receive Data**
-  - Develop the backend to receive and store data.
-  - Choose and set up a database with a simple schema.
-
-- [x] **Basic Reporting Interface**
-  - Create a basic web interface for displaying total page views and unique visitors.
-  - Implement simple charts or tables for data display.
-
-- [ ] **Deployment and Testing**
-  - Deploy the application on a cloud server or locally.
-  - Test the tracking to reporting flow.
-
-### Stage 2: Enhanced Data Collection and Reporting
-- [x] **Enhance the Tracking Script**
-  - Add data collection for referral source, browser/device info, and page time.
-
-- [x] **Update Backend and Database**
-  - Adapt the backend for additional data processing.
-  - Update the database schema as needed
-
-- [ ] **Improved Reporting Interface**
-  - Add new metrics (bounce rate, session duration, demographics) to the interface.
-  - Implement advanced visualizations.
-
-- [ ] **Testing and Optimization**
-  - Test new features for accuracy and performance.
-  - Optimize data processing and reporting.
-
-### Stage 3: Performance Insights
-- [ ] **Real-Time Data Processing Setup**
-  - Set up Apache Kafka for data streaming.
-  - Use a framework (Apache Spark, Node.js) for real-time data processing.
-
-- [ ] **Real-Time Dashboard**
-  - Develop a real-time dashboard in the web interface.
-  - Display metrics like active users and page views per minute.
-
-- [ ] **Testing Real-Time Features**
-  - Test real-time data processing and dashboard updates.
-  - Ensure efficient handling of data streams.
-
-### Stage 4: Full-Fledged Real-Time Analytics
-- [ ] **Advanced Real-Time Analytics**
-  - Enhance real-time processing (user flow, session tracking, event triggers).
-  - Implement real-time alerts for specific conditions.
-
-- [ ] **Scalability and Robustness**
-  - Ensure system scalability for higher loads.
-  - Implement robust error handling and data recovery.
-
-- [ ] **Comprehensive Testing and Optimization**
-  - Conduct extensive testing (load, stress).
-  - Optimize for performance and reliability.
-
-### Final Steps
-- [ ] **Documentation**
-  - Document features, setup, and usage of the tool.
-
-- [ ] **User Feedback**
-  - Gather feedback from users and iterate based on it.
-
-- [ ] **Continuous Improvement**
-  - Continuously improve the tool with new features and updates.
+## Running development server
+* Follow steps above for starting services
+* There are watch scripts to watch for changes in the package.json
+* To watch changes for `.go` files, install air `go install github.com/cosmtrek/air@latest`
+* Then run `air`, the config already exists so you don't need to init air
+* *NOTE*: the installation of `air` can be skipped, but remember to restart go server everytime you make a change `go run main.go`
