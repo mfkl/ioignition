@@ -83,8 +83,8 @@ jobs:
         with: 
           fetch-dept: 0
 
-      - name: Install goose
-        run: go install github.com/pressly/goose/v3/cmd/goose@latest
+      - name: Check goose intallation
+        run: goose version
 
       - name: Run Migrations
         run: ./scripts/migrateup.sh
