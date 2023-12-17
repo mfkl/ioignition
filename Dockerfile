@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM debian:bullseye-slim
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
