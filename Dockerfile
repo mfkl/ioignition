@@ -6,14 +6,15 @@ WORKDIR /app
 ARG DATABASE_URL
 ARG JWT_SECRET
 
-# Copy the pre-built Go binary into our container.
+# Copy binary & assets folder
 COPY main .
-
-# Copy the public directory into the container
 COPY public public
 
+COPY env.example .env
+RUN sed -i "s/DATABASE_URL=.*/DATABASE_URL=${DATABASE_URL}/" .env
+RUN sed -i "s/JWT_SECRET=.*/JWT_SECRET=${JWT_SECRET}/" .env
+
 ENV HOST=0.0.0.0
-ENV DATABASE_URL=${DATABASE_URL}
 ENV JWT_SECRET=${JWT_SECRET}
 
 EXPOSE 8080
