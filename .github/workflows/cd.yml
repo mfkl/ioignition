@@ -66,8 +66,8 @@ jobs:
           docker save -o $DOCKER_IMAGE.tar $DOCKER_IMAGE
           scp ./$DOCKER_IMAGE.tar $DOKKU_USER@$DOKKU_HOST:/home/$DOKKU_USER/ioignition/
 
-      - name: Install goose
-        run: go install github.com/pressly/goose/v3/cmd/goose@latest
+      #- name: Install goose
+      #  run: go install github.com/pressly/goose/v3/cmd/goose@latest
 
       # this script requires the env to be set in repo => settings/enviornments/secrets
       #      - name: Run Migrations
@@ -76,4 +76,4 @@ jobs:
       #          DATABASE_URL: ${{ secrets.DATABASE_URL}}
 
       - name: Deploy to Dokku
-        run: ssh $DOKKU_USER@$DOKKU_HOST "docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP $DOCKER_IMAGE"
+        run: ssh $DOKKU_USER@$DOKKU_HOST "sudo docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP $DOCKER_IMAGE"
