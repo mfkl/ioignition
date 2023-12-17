@@ -70,7 +70,7 @@ jobs:
         run: ssh $DOKKU_USER@$DOKKU_HOST "sudo docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP $DOCKER_IMAGE"
 
   migrate:
-    runs-on: [self-hosted, server-vps]
+    runs-on: self-hosted
 
     steps:
       - name: Set up Go
