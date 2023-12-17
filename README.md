@@ -3,7 +3,7 @@
 </div> 
 
 # ioignition
-Privacy first, open, and simple analytics app
+Privacy first analytics app
 
 ## Add secrets
 Copy `env.example` into `.env` and add secrets required to run the app
