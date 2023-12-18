@@ -69,7 +69,7 @@ jobs:
           scp ./$DOCKER_IMAGE.tar $DOKKU_USER@$DOKKU_HOST:/home/$DOKKU_USER/ioignition/
 
       - name: Deploy to Dokku
-        run: ssh $DOKKU_USER@$DOKKU_HOST "sudo docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP $DOCKER_IMAGE"
+        run: ssh $DOKKU_USER@$DOKKU_HOST "sudo docker load -i $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar && sudo dokku git:from-image $DOKKU_APP $DOCKER_IMAGE && rm -rf $DOKKU_DESTINATION_FOLDER/$DOCKER_IMAGE.tar"
 
   migrate:
     needs: build
