@@ -14,23 +14,23 @@ import (
 
 const createLocation = `-- name: CreateLocation :one
 INSERT INTO countries (
-  id, emoji, country_code, name, region, session_id, domain_id, created_at, updated_at
+  id, emoji, country_code, name, region, domain_session_id, domain_id, created_at, updated_at
 ) VALUES (
   $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
-RETURNING id, emoji, country_code, name, region, created_at, updated_at, session_id, domain_id
+RETURNING id, emoji, country_code, name, region, created_at, updated_at, domain_session_id, domain_id
 `
 
 type CreateLocationParams struct {
-	ID          uuid.UUID
-	Emoji       string
-	CountryCode string
-	Name        string
-	Region      string
-	SessionID   string
-	DomainID    uuid.UUID
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID              uuid.UUID
+	Emoji           string
+	CountryCode     string
+	Name            string
+	Region          string
+	DomainSessionID uuid.UUID
+	DomainID        uuid.UUID
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }
 
 func (q *Queries) CreateLocation(ctx context.Context, arg CreateLocationParams) (Country, error) {
@@ -40,7 +40,7 @@ func (q *Queries) CreateLocation(ctx context.Context, arg CreateLocationParams) 
 		arg.CountryCode,
 		arg.Name,
 		arg.Region,
-		arg.SessionID,
+		arg.DomainSessionID,
 		arg.DomainID,
 		arg.CreatedAt,
 		arg.UpdatedAt,
@@ -54,14 +54,14 @@ func (q *Queries) CreateLocation(ctx context.Context, arg CreateLocationParams) 
 		&i.Region,
 		&i.CreatedAt,
 		&i.UpdatedAt,
-		&i.SessionID,
+		&i.DomainSessionID,
 		&i.DomainID,
 	)
 	return i, err
 }
 
 const getLocationCount = `-- name: GetLocationCount :many
-SELECT name, emoji, COUNT(session_id) AS location_count
+SELECT name, emoji, COUNT(domain_session_id) AS location_count
 FROM countries
 WHERE domain_id = $1 AND created_at > $2
 GROUP BY country_code, name, emoji

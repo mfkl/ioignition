@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (h *Handler) GetLocation(ip string, sessionId string, domainId uuid.UUID) {
+func (h *Handler) GetLocation(ip string, sessionId uuid.UUID, domainId uuid.UUID) {
 	ctx := context.Background()
 
 	cachedInfo := h.client.HGetAll(ctx, ip).Val()
@@ -51,15 +51,15 @@ func (h *Handler) GetLocation(ip string, sessionId string, domainId uuid.UUID) {
 	}
 
 	param := database.CreateLocationParams{
-		ID:          uuid.New(),
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
-		SessionID:   sessionId,
-		DomainID:    domainId,
-		Emoji:       cachedInfo["Emoji"],
-		CountryCode: cachedInfo["CountryCode"],
-		Region:      cachedInfo["Region"],
-		Name:        cachedInfo["Name"],
+		ID:              uuid.New(),
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
+		DomainSessionID: sessionId,
+		DomainID:        domainId,
+		Emoji:           cachedInfo["Emoji"],
+		CountryCode:     cachedInfo["CountryCode"],
+		Region:          cachedInfo["Region"],
+		Name:            cachedInfo["Name"],
 	}
 
 	_, err := h.dbQueries.CreateLocation(ctx, param)

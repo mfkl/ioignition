@@ -12,15 +12,15 @@ import (
 )
 
 type Country struct {
-	ID          uuid.UUID
-	Emoji       string
-	CountryCode string
-	Name        string
-	Region      string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	SessionID   string
-	DomainID    uuid.UUID
+	ID              uuid.UUID
+	Emoji           string
+	CountryCode     string
+	Name            string
+	Region          string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+	DomainSessionID uuid.UUID
+	DomainID        uuid.UUID
 }
 
 type Domain struct {
